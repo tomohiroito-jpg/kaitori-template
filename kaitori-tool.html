@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>買取テンプレート作成ツール</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { background-color: #f0fdfd; font-family: sans-serif; color: #333; margin: 0; padding: 20px; }
+    .container { max-width: 700px; margin: auto; padding: 20px; border: 2px solid #30CFCF; border-radius: 10px; background-color: #fff; }
+    h1 { color: #30CFCF; text-align: center; }
+    label { display: block; margin-top: 15px; font-weight: bold; color: #30CFCF; }
+    select, input, textarea { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
+    button { background-color: #30CFCF; color: white; border: none; padding: 10px; margin-top: 15px; border-radius: 5px; cursor: pointer; }
+    textarea { height: 300px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>買取テンプレート作成ツール</h1>
+
+    <label>【担当店舗・会場名】</label>
+    <input type="text" id="store">
+
+    <label>【ジャンル】</label>
+    <select id="genre"></select>
+
+    <label>【中分類】</label>
+    <select id="subcategory" style="display:none;"></select>
+    <input type="text" id="subcategoryFree" placeholder="中分類を入力" style="display:none;">
+
+    <label>【ブランド名】</label>
+    <input type="text" id="brand">
+
+    <div id="dynamicFields"></div>
+
+    <label>【写真撮影指示】</label>
+    <div id="photoInstructions"></div>
+
+    <button id="generateBtn">テンプレートを生成</button>
+    <textarea id="output" readonly></textarea>
+    <button id="copyBtn">コピーする</button>
+  </div>
+<script>
+window.onload = function() {
+  const genreSelect = document.getElementById("genre");
+  const subSelect = document.getElementById("subcategory");
+  const subFree = document.getElementById("subcategoryFree");
+
+  const genres = ["貴金属","宝石","バッグ","財布","時計","家電","スマホ","トレカ","アパレル","お酒","記念硬貨","古銭","金券","楽器","骨董","日本刀","道具類","その他"];
+  const subcategories = {
+    "貴金属": ["リング","ネックレス","ペンダント","ブレスレット","ピアス","イヤリング","ブローチ","その他"],
+    "宝石": ["ダイヤ","サファイア","ルビー","エメラルド","アレキサンドライト","その他"],
+    "バッグ": ["トート","ハンド","ショルダー","ボストン","バニティ","ポーチ","リュック","ビジネス","その他"],
+    "財布": ["長財布","二つ折り","コインケース","カードケース","その他"],
+    "時計": ["自動巻き","手巻き","クオーツ","電波","スマートウォッチ"],
+    "家電": ["パソコン","タブレット","ゲーム機","オーディオ機器","映像機器","生活家電","その他"],
+    "スマホ": ["アップル","その他"],
+    "トレカ": ["ポケモン","遊戯王","ワンピース","その他"],
+    "アパレル": ["アウター","シャツ","ボトムス","靴","その他"],
+    "お酒": ["洋酒","国産酒","その他"],
+    "記念硬貨": ["金貨","銀貨","紙幣","その他"],
+    "古銭": ["金貨","銀貨","その他"],
+    "金券": ["切手","中国切手","海外切手","ギフト券","各種カード類","株主優待券","その他"],
+    "楽器": ["弦楽器","管楽器","打楽器","その他"],
+    "骨董": ["箱あり","箱なし","大型商品","大量","その他"],
+    "日本刀": ["短刀","脇差","刀","槍","薙刀","その他"],
+    "道具類": ["釣具","ゴルフ道具","電動工具","香水","その他"],
+    "その他": []
+  };
+
+  const defaultOption = document.createElement("option");
+  defaultOption.value = "";
+  defaultOption.textContent = "選択してください";
+  genreSelect.appendChild(defaultOption);
+
+  genres.forEach(g => {
+    const opt = document.createElement("option");
+    opt.value = g;
+    opt.textContent = g;
+    genreSelect.appendChild(opt);
+  });
+
+  genreSelect.addEventListener("change", () => {
+    const genre = genreSelect.value;
+    subSelect.innerHTML = '<option value="">選択してください</option>';
+    if (!genre) {
+      subSelect.style.display = "none";
+      subFree.style.display = "none";
+      return;
+    }
+    if (genre === "その他") {
+      subSelect.style.display = "none";
+      subFree.style.display = "block";
+    } else {
+      subSelect.style.display = "block";
+      subFree.style.display = "none";
+      (subcategories[genre] || []).forEach(sub => {
+        const opt = document.createElement("option");
+        opt.value = sub;
+        opt.textContent = sub;
+        subSelect.appendChild(opt);
+      });
+    }
+    updateDynamicFields();
+    updatePhotoInstructions();
+  });
+
+  subSelect.addEventListener("change", updateDynamicFields);
+  subFree.addEventListener("input", updateDynamicFields);
+  document.getElementById("brand").addEventListener("input", updateDynamicFields);
+  document.getElementById("generateBtn").addEventListener("click", generateTemplate);
+  document.getElementById("copyBtn").addEventListener("click", () => {
+    const output = document.getElementById("output");
+    output.select();
+    document.execCommand("copy");
+  });
+  function updateDynamicFields() {
+    const genre = document.getElementById("genre").value;
+    const container = document.getElementById("dynamicFields");
+    container.innerHTML = "";
+
+    const templates = {
+      "宝石": [["【アイテム種別】","itemType"],["【メイン石の種類】","mainStone"],["【メイン石の重量（ct）】","mainStoneWeight"],["【素材】","material"],["【刻印内容】","engraving"],["【メイン石詳細】","stoneDetail"],["【総重量】","weight"],["【付属品】","accessories"]],
+      "貴金属": [["【素材】","material"],["【重量】","weight"],["【刻印】","engraving"]],
+      "時計": [["【モデル名・型番】","model"],["【動作確認】","operation"],["【ケースサイズ】","caseSize"],["【状態】","condition"],["【付属品】","accessories"]],
+      "バッグ": [["【型番／モデル名】","material"],["【シリアル】","color"],["【サイズ】","size"],["【状態】","condition"],["【付属品】","accessories"]],
+      "財布": [["【型番／モデル名】","material"],["【シリアル】","color"],["【状態】","condition"],["【付属品】","accessories"]],
+      "スマホ": [["【機種名／型番】","model"],["【容量】","capacity"],["【キャリア】","carrier"],["【ネットワーク利用制限】","network"],["【バッテリー最大容量】","battery"],["【状態】","condition"],["【付属品】","accessories"]],
+      "家電": [["【型番】","model"],["【年式】","year"],["【動作確認】","operation"],["【状態】","condition"],["【付属品】","accessories"]],
+      "トレカ": [["【カード名】","cardName"],["【レアリティ】","rarity"],["【状態】","condition"],["【鑑定情報】","grading"]],
+      "アパレル": [["【型番など（わかれば）】","itemType"],["【サイズ】","size"],["【状態】","condition"],["【付属品】","accessories"]],
+      "お酒": [["【銘柄】","brand"],["【容量】","volume"],["【度数】","alcohol"],["【状態】","condition"],["【付属品】","accessories"]],
+      "記念硬貨": [["【種類】","type"],["【材質】","material"],["【重量】","weight"],["【状態】","condition"]],
+      "古銭": [["【種類】","type"],["【材質】","material"],["【重量】","weight"],["【状態】","condition"]],
+      "金券": [["【種類】","type"],["【額面】","value"],["【状態】","condition"]],
+      "楽器": [["【種類】","type"],["【メーカー】","maker"],["【型番】","model"],["【状態】","condition"],["【付属品】","accessories"]],
+      "骨董": [["【種類】","type"],["【作家名・銘】","artist"],["【状態】","condition"],["【付属品】","accessories"]],
+      "日本刀": [["【銘】","signature"],["【長さ】","registration"],["【白鞘or拵】","mounting"],["【状態】","condition"]],
+      "道具類": [["【種類】","type"],["【メーカー】","maker"],["【型番】","model"],["【状態】","condition"],["【付属品】","accessories"]]
+    };
+
+    const commonFields = [["【備考】", "notes"],["【お客様希望額】", "wish"],["【見立て金額】", "estimate"]];
+    const fields = (templates[genre] || []).concat(commonFields);
+    fields.forEach(([label, id]) => {
+      let html = `<label>${label}</label>`;
+      if (genre === "時計" && id === "operation") {
+        html += `<select id="${id}"><option value="">選択してください</option><option value="動作">動作</option><option value="不動">不動</option></select>`;
+      } else if (genre === "スマホ" && id === "network") {
+        html += `<select id="${id}"><option value="">選択してください</option><option value="〇">〇</option><option value="△">△</option><option value="×">×</option><option value="－">－</option></select>`;
+      } else if (genre === "家電" && id === "operation") {
+        html += `<select id="${id}"><option value="">選択してください</option><option value="動作確認済み">動作確認済み</option><option value="通電確認済">通電確認済</option><option value="未チェック">未チェック</option></select>`;
+      } else if (genre === "日本刀" && id === "registration") {
+        html += `<input type="text" id="${id}">`;
+        html += `<label>【白鞘or拵】</label><select id="mounting"><option value="">選択してください</option><option value="白鞘">白鞘</option><option value="拵">拵</option><option value="白鞘と拵どちらも付属">白鞘と拵どちらも付属</option></select>`;
+      } else if (id === "mounting") {
+        return;
+      } else {
+        html += `<input type="text" id="${id}">`;
+      }
+      container.insertAdjacentHTML("beforeend", html);
+    });
+
+    if (!templates[genre]) {
+      container.insertAdjacentHTML("beforeend", `<label>【型番や製品名】</label><input type="text" id="customModel">`);
+    }
+  }
+
+  function updatePhotoInstructions() {
+    const genre = document.getElementById("genre").value;
+    const photo = document.getElementById("photoInstructions");
+    const red = txt => `<span style="color:red;font-weight:bold;">${txt}</span><br>`;
+    const photoMap = {
+      "宝石": red("【白背景で撮影すること】") + `①全体写真（真上から）<br>②石部分アップ（光を当てて）<br>③刻印アップ（ピントを合わせて）<br>④石の色が分かる写真<br>⑤ダメージ箇所（あれば）<br>⑥付属品（鑑別書・ケースなど）`,
+      "貴金属": `①全体写真<br>②刻印アップ（ピントを合わせて）<br>③比重計計測写真（比重必要な製品）`,
+      "時計": `①本体正面（文字盤）<br>②裏蓋／刻印（シリアル）<br>③時計全体（ベルト含む）<br>④ブレス垂れ（ロレックスのみ）<br>⑤キズ・欠損（あれば）<br>⑥付属品（外箱／保証書／ギャラ）`,
+      "バッグ": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③ハンドルアップ<br>④ハンドルやショルダー付け根<br>⑤ダメージ箇所（あれば）<br>⑥付属品（箱／保証書／レシートなど）`,
+      "財布": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③コインケースの中／札入れの中（劣化注意）<br>④ダメージ箇所（角すれ注意）<br>⑤付属品（箱／保証書／レシートなど）`,
+      "スマホ": `①全体正面／背面<br>②ダメージ箇所（へこみ、ガラス割れ注意）<br>③付属品（箱／コード類／説明書など）`,
+      "トレカ": `①正面写真<br>②背面写真<br>③角をアップで<br>④ダメージ箇所（あれば）<br>⑤鑑定ケース（あれば内容が分かるように）`,
+      "アパレル": `①全体正面／背面<br>②ランドリータグ（型番などが記載のもの）<br>③ブランドロゴタグ<br>④ダメージ箇所（襟、袖、裾は汚れやすいため注意）`,
+      "お酒": `①全体写真<br>②キャップ<br>③ラベル（表／裏）<br>④箱<br>⑤液体の容量（水面の高さがわかる写真）<br>⑥ダメージ／漏れの箇所（あれば）`,
+      "記念硬貨": `①全体表面／裏面<br>②デザインアップ<br>③重量・比重を測った写真（必要であれば）`,
+      "古銭": `①全体表面／裏面<br>②デザインアップ<br>③重量・比重を測った写真（必要であれば）`,
+      "金券": `①表面<br>②裏面<br>③ダメージ箇所（あれば）`,
+      "楽器": `①全体がわかる写真数枚<br>②型番／製番の記載箇所<br>③ダメージ箇所（あれば）<br>④付属品（ケース／保証書など）`,
+      "骨董": `①全体写真<br>②箱（箱書きがあれば読めるように）<br>③本体の裏面（サインがあればピントを合わせてアップで）<br>④ダメージ箇所（あれば）`,
+      "日本刀": `登録証との相違が分かるよう、全体・銘・状態・登録証の写真を推奨`,
+      "道具類": `型番などがわかる部分（ラベルなど）があれば撮影推奨`,
+      "その他": `①全体写真<br>②特徴が分かるアップ写真<br>③ダメージ箇所（あれば）<br>④付属品（あれば）`
+    };
+    photo.innerHTML = photoMap[genre] || "";
+  }
+  function generateTemplate() {
+    const store = document.getElementById("store").value;
+    const genre = document.getElementById("genre").value;
+    const subVal = subSelect.style.display === "none" ? subFree.value : subSelect.value;
+    const brand = document.getElementById("brand").value;
+    const fields = document.querySelectorAll("#dynamicFields input, #dynamicFields select");
+
+    let template = `【担当店舗・会場名】\n${store}\n【ジャンル】\n${genre}\n【中分類】\n${subVal}\n【ブランド名】\n${brand}\n`;
+    fields.forEach(field => {
+      const label = field.previousElementSibling?.textContent || "";
+      const value = field.value || "";
+      template += `${label}\n${value}\n`;
+    });
+
+    document.getElementById("output").value = template.trim();
+  }
+}; // window.onload 終了
+</script>
+</body>
+</html>
