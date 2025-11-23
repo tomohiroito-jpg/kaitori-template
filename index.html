@@ -14,15 +14,14 @@
     button:active { transform: scale(0.98); }
     textarea { height: 280px; margin-top: 10px; }
     #photoInstructions { padding: 10px; border: 1px dashed #30CFCF; border-radius: 6px; background: #f8ffff; min-height: 80px; }
-    .invalid { background-color: #ffe0e0; } /* 未選択は薄ピンク */
-    select option { background-color: #fff; color: #333; } /* 展開リストは常に白 */
+    .invalid { background-color: #ffe0e0; }
+    select option { background-color: #fff; color: #333; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>買取テンプレート作成ツール</h1>
 
-    <!-- 修正済みラベル -->
     <label>【担当店舗・催事】</label>
     <input type="text" id="store">
 
@@ -55,11 +54,11 @@ window.onload = function() {
   const genres = ["貴金属","宝石","バッグ","財布","時計","家電","スマホ","トレカ","アパレル","お酒","記念硬貨","古銭","金券","楽器","骨董","日本刀","道具類","その他"];
   const subcategories = {
     "貴金属": ["リング","ネックレス","ペンダント","ブレスレット","ピアス","イヤリング","ブローチ","その他"],
-    "宝石": ["ダイヤ","サファイア","ルビー","エメラルド","アレキサンドライト","その他"],
+    "宝石": ["ダイヤ","サファイア","ルビー","エメラルド","アレキサンドライト","パール","その他"], // パール追加
     "バッグ": ["トート","ハンド","ショルダー","ボストン","バニティ","ポーチ","リュック","ビジネス","その他"],
     "財布": ["長財布","二つ折り","コインケース","カードケース","その他"],
     "時計": ["自動巻き","手巻き","クオーツ","電波","スマートウォッチ","その他"],
-    "家電": ["パソコン","タブレット","ゲーム機","オーディオ機器","映像機器","生活家電","その他"],
+    "家電": ["パソコン","タブレット","カメラ","ゲーム機","オーディオ機器","映像機器","生活家電","その他"], // カメラ追加
     "スマホ": ["アップル","アンドロイド","その他"],
     "トレカ": ["ポケモン","遊戯王","ワンピース","その他"],
     "アパレル": ["アウター","シャツ","ボトムス","靴","その他"],
@@ -132,8 +131,8 @@ window.onload = function() {
       "宝石": [["【アイテム種別】","itemType"],["【メイン石の種類】","mainStone"],["【メイン石の重量（ct）】","mainStoneWeight"],["【素材】","material"],["【刻印内容】","engraving"],["【メイン石詳細】","stoneDetail"],["【総重量】","weight"],["【付属品】","accessories"]],
       "貴金属": [["【素材】","material"],["【重量】","weight"],["【刻印】","engraving"]],
       "時計": [["【モデル名・型番】","model"],["【動作確認】","operation"],["【ケースサイズ】","caseSize"],["【状態】","condition"],["【付属品】","accessories"]],
-      "バッグ": [["【型番／モデル名】","material"],["【シリアル】","color"],["【サイズ】","size"],["【状態】","condition"],["【付属品】","accessories"]],
-      "財布": [["【型番／モデル名】","material"],["【シリアル】","color"],["【状態】","condition"],["【付属品】","accessories"]],
+      "バッグ": [["【型番／モデル名】","model"],["【シリアル】","serial"],["【サイズ】","size"],["【状態】","condition"],["【付属品】","accessories"]], // 修正済み
+      "財布": [["【型番／モデル名】","model"],["【シリアル】","serial"],["【状態】","condition"],["【付属品】","accessories"]], // 修正済み
       "スマホ": [["【機種名／型番】","model"],["【容量】","capacity"],["【キャリア】","carrier"],["【ネットワーク利用制限】","network"],["【バッテリー最大容量】","battery"],["【状態】","condition"],["【付属品】","accessories"]],
             "家電": [["【型番】","model"],["【年式】","year"],["【動作確認】","operation"],["【状態】","condition"],["【付属品】","accessories"]],
       "トレカ": [["【カード名】","cardName"],["【レアリティ】","rarity"],["【状態】","condition"],["【鑑定情報】","grading"]],
@@ -144,7 +143,7 @@ window.onload = function() {
       "金券": [["【種類】","type"],["【額面】","value"],["【状態】","condition"]],
       "楽器": [["【種類】","type"],["【メーカー】","maker"],["【型番】","model"],["【状態】","condition"],["【付属品】","accessories"]],
       "骨董": [["【種類】","type"],["【作家名・銘】","artist"],["【状態】","condition"],["【付属品】","accessories"]],
-      "日本刀": [["【銘】","signature"],["【長さ】","registration"],["【白鞘or拵】","mounting"],["【状態】","condition"]],
+      "日本刀": [["【銘】","signature"],["【長さ】","length"],["【白鞘or拵】","mounting"],["【状態】","condition"]], // ← registration → length に修正済み
       "道具類": [["【種類】","type"],["【メーカー】","maker"],["【型番】","model"],["【状態】","condition"],["【付属品】","accessories"]]
     };
 
@@ -174,7 +173,7 @@ window.onload = function() {
           <option value="通電確認済">通電確認済</option>
           <option value="未チェック">未チェック</option>
         </select>`;
-      } else if (genre === "日本刀" && id === "registration") {
+      } else if (genre === "日本刀" && id === "length") { // ← 修正済み
         html += `<input type="text" id="${id}">`;
         html += `<label>【白鞘or拵】</label>
         <select id="mounting" class="invalid">
@@ -184,7 +183,7 @@ window.onload = function() {
           <option value="白鞘と拵どちらも付属">白鞘と拵どちらも付属</option>
         </select>`;
       } else if (id === "mounting") {
-        return; // registrationで生成済み
+        return; // lengthで生成済み
       } else {
         html += `<input type="text" id="${id}">`;
       }
@@ -198,7 +197,7 @@ window.onload = function() {
     });
   }
 
-  // 写真撮影指示（原型保持）
+  // 写真撮影指示（元のコードそのまま）
   function updatePhotoInstructions() {
     const genre = document.getElementById("genre").value;
     const photo = document.getElementById("photoInstructions");
@@ -210,6 +209,10 @@ window.onload = function() {
       "バッグ": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③ハンドルアップ<br>④ハンドルやショルダー付け根<br>⑤ダメージ箇所（あれば）<br>⑥付属品（箱／保証書／レシートなど）`,
       "財布": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③コインケースの中／札入れの中（劣化注意）<br>④ダメージ箇所（角すれ注意）<br>⑤付属品（箱／保証書／レシートなど）`,
       "スマホ": `①全体正面／背面<br>②ダメージ箇所（へこみ、ガラス割れ注意）<br>③付属品（箱／コード類／説明書など）`,
+      "家電": `①全体写真<br>
+②型番などが分かる写真<br>
+③付属品（コード類／説明書／箱など）<br>
+④ダメージ箇所（あれば）`,
       "トレカ": `①正面写真<br>②背面写真<br>③角をアップで<br>④ダメージ箇所（あれば）<br>⑤鑑定ケース（あれば内容が分かるように）`,
       "アパレル": `①全体正面／背面<br>②ランドリータグ（型番などが記載のもの）<br>③ブランドロゴタグ<br>④ダメージ箇所（襟、袖、裾は汚れやすいため注意）`,
       "お酒": `①全体写真<br>②キャップ<br>③ラベル（表／裏）<br>④箱<br>⑤液体の容量（水面の高さがわかる写真）<br>⑥ダメージ／漏れの箇所（あれば）`,
@@ -256,7 +259,7 @@ window.onload = function() {
 
   document.getElementById("generateBtn").addEventListener("click", generateTemplate);
 
-  // コピー処理改善版（押したことがわかりやすい）
+  // コピー処理（元のコードそのまま）
   const copyBtn = document.getElementById("copyBtn");
   copyBtn.addEventListener("click", () => {
     const output = document.getElementById("output");
