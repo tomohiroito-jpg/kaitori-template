@@ -5,22 +5,27 @@
   <title>買取テンプレート作成ツール</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * { box-sizing: border-box; -webkit-overflow-scrolling: touch; }
-    html, body { 
+    * { 
+      box-sizing: border-box; 
+      -webkit-overflow-scrolling: touch; 
+    }
+    html { 
       margin: 0; 
       padding: 0; 
-      width: 100%; 
-      height: 100%;
-      overflow-x: hidden;
-      overflow-y: auto;
-      position: relative;
+      width: 100%;
+      height: auto !important;
+      overflow: visible;
     }
     body { 
       background-color: #f0fdfd; 
       font-family: sans-serif; 
       color: #333; 
+      margin: 0;
       padding: 20px; 
-      min-height: 100vh;
+      width: 100%;
+      height: auto !important;
+      overflow: visible;
+      min-height: 0;
     }
     .container { 
       max-width: 720px; 
@@ -31,6 +36,7 @@
       background-color: #fff;
       position: relative;
       overflow: visible;
+      height: auto;
     }
     h1 { color: #30CFCF; text-align: center; margin: 0 0 10px; }
     h2 { color: #30CFCF; border-bottom: 2px solid #30CFCF; padding-bottom: 8px; margin-top: 25px; }
@@ -100,8 +106,12 @@
     .invalid { background-color: #ffe0e0; }
     select option { background-color: #fff; color: #333; }
     .button-group { display: flex; gap: 10px; flex-wrap: wrap; }
-    .hidden { display: none; }
-    .manual-content { line-height: 1.8; }
+    .hidden { display: none !important; }
+    .manual-content { 
+      line-height: 1.8;
+      overflow: visible;
+      height: auto;
+    }
     .manual-content p { margin: 10px 0; }
     .manual-content ul { margin: 10px 0; padding-left: 25px; }
     .manual-content li { margin: 8px 0; }
@@ -327,7 +337,7 @@
         A: 画面を再読み込みするか、ブラウザを変更してお試しください。</p>
       </div>
 
-      <div style="text-align: center; margin-top: 30px;">
+      <div style="text-align: center; margin-top: 30px; margin-bottom: 50px;">
         <button id="backBtn2">ツールに戻る</button>
       </div>
     </div>
@@ -377,17 +387,33 @@ window.onload = function() {
     "スマホ": "状態備考:例)ガラス欠けあり。"
   };
 
-  // iframe内の高さを親に通知する関数（強化版）
+  // iframe内の高さを親に通知する関数（超強化版）
   function notifyHeightChange() {
     if (window.parent !== window) {
+      // 高さ計算を複数の方法で実施
       const bodyHeight = document.body.scrollHeight;
       const htmlHeight = document.documentElement.scrollHeight;
-      const containerHeight = document.querySelector('.container:not(.hidden)')?.scrollHeight || 0;
-      const height = Math.max(bodyHeight, htmlHeight, containerHeight);
+      const bodyOffset = document.body.offsetHeight;
+      const visibleContainer = document.querySelector('.container:not(.hidden)');
+      const containerHeight = visibleContainer ? visibleContainer.scrollHeight : 0;
+      
+      // すべての計算値から最大値を取得
+      const height = Math.max(bodyHeight, htmlHeight, bodyOffset, containerHeight) + 100; // 余白を追加
       
       window.parent.postMessage({ type: 'resize', height: height }, '*');
-      console.log('📏 Height notification sent:', height);
+      console.log('📏 Height sent:', height, {bodyHeight, htmlHeight, bodyOffset, containerHeight});
     }
+  }
+
+  // より頻繁に高さを通知
+  function notifyHeightChangeMultiple() {
+    notifyHeightChange();
+    setTimeout(notifyHeightChange, 100);
+    setTimeout(notifyHeightChange, 300);
+    setTimeout(notifyHeightChange, 600);
+    setTimeout(notifyHeightChange, 1000);
+    setTimeout(notifyHeightChange, 1500);
+    setTimeout(notifyHeightChange, 2000);
   }
 
   // MutationObserverでコンテンツの変更を監視
@@ -398,26 +424,39 @@ window.onload = function() {
   observer.observe(document.body, {
     childList: true,
     subtree: true,
-    attributes: true
+    attributes: true,
+    characterData: true
   });
 
-  // 画面切り替え（強化版 - マニュアル対応）
+  // 画面切り替え（超強化版）
   function switchScreen(hideScreen, showScreen) {
     hideScreen.classList.add("hidden");
     showScreen.classList.remove("hidden");
-    window.scrollTo(0, 0);
     
-    // 画面切り替え直後に複数回高さを通知（確実に反映させるため）
-    setTimeout(notifyHeightChange, 50);
-    setTimeout(notifyHeightChange, 200);
-    setTimeout(notifyHeightChange, 500);
-    setTimeout(notifyHeightChange, 1000);
-    setTimeout(notifyHeightChange, 1500);
+    // スクロール位置をトップに
+    window.scrollTo(0, 0);
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'scrollTop' }, '*');
+    }
+    
+    // 画面切り替え後に積極的に高さを通知
+    notifyHeightChangeMultiple();
   }
 
-  manualBtn.addEventListener("click", () => switchScreen(mainScreen, manualScreen));
-  backBtn.addEventListener("click", () => switchScreen(manualScreen, mainScreen));
-  backBtn2.addEventListener("click", () => switchScreen(manualScreen, mainScreen));
+  manualBtn.addEventListener("click", () => {
+    console.log('📖 Manual button clicked');
+    switchScreen(mainScreen, manualScreen);
+  });
+  
+  backBtn.addEventListener("click", () => {
+    console.log('🔙 Back button clicked');
+    switchScreen(manualScreen, mainScreen);
+  });
+  
+  backBtn2.addEventListener("click", () => {
+    console.log('🔙 Back button 2 clicked');
+    switchScreen(manualScreen, mainScreen);
+  });
 
   function markSelectValidity(sel) {
     if (!sel) return;
@@ -450,7 +489,6 @@ window.onload = function() {
       "その他": `①全体写真<br>②特徴が分かるアップ写真<br>③ダメージ箇所(あれば)<br>④付属品(あれば)`
     };
     photo.innerHTML = photoMap[genre] || "";
-    // 写真指示が更新されたら高さを通知
     setTimeout(notifyHeightChange, 50);
   }
 
@@ -527,13 +565,11 @@ window.onload = function() {
     const commonFields = [["【備考】","notes"],["【お客様希望額】","wish"],["【見立て金額】","estimate"]];
     const fields = (templates[genre] || []).concat(commonFields);
 
-    // プルダウン＋自由入力が必要なジャンル(トレカを除外)
     const genresWithConditionDropdown = ["バッグ", "財布", "時計", "アパレル", "家電", "スマホ"];
 
     fields.forEach(([label, id]) => {
       let html = `<label>${label}</label>`;
       
-      // 状態欄:指定されたジャンルはプルダウン＋備考欄
       if (genresWithConditionDropdown.includes(genre) && id === "condition") {
         const placeholder = conditionPlaceholders[genre] || "状態備考を入力";
         html += `<div style="display:flex; gap:8px; align-items:center; flex-wrap: wrap;">
@@ -580,24 +616,21 @@ window.onload = function() {
           <option value="白鞘と拵どちらも付属">白鞘と拵どちらも付属</option>
         </select>`;
       } else if (id === "mounting") {
-        return; // lengthで生成済み
+        return;
       } else {
         html += `<input type="text" id="${id}">`;
       }
       container.insertAdjacentHTML("beforeend", html);
     });
 
-    // 未選択は薄ピンクにする
     container.querySelectorAll('select').forEach(sel => {
       markSelectValidity(sel);
       sel.addEventListener('change', () => markSelectValidity(sel));
     });
 
-    // 動的フィールド生成後に高さを通知
     setTimeout(notifyHeightChange, 50);
   }
 
-  // テンプレート生成(状態欄:プルダウン＋備考を1行にまとめる)
   function generateTemplate() {
     const store = document.getElementById("store").value;
     const genre = document.getElementById("genre").value;
@@ -620,7 +653,6 @@ window.onload = function() {
       const label = field.previousElementSibling?.textContent || "";
       const value = field.value || "";
 
-      // 状態欄:指定されたジャンルはプルダウン＋備考を1行にまとめる
       if (genresWithConditionDropdown.includes(genre) && field.id === "condition") {
         const notes = document.getElementById("conditionNotes")?.value || "";
         const combined = notes ? `${value}　${notes}` : value;
@@ -631,12 +663,10 @@ window.onload = function() {
         return;
       }
 
-      // 状態備考は通常処理に通さない
       if (field.id === "conditionNotes") {
         return;
       }
 
-      // 通常の項目(空文字と「選択してください」は除外)
       if (value && value !== "選択してください") {
         template += `${label}\n${value}\n`;
       }
@@ -645,17 +675,14 @@ window.onload = function() {
     document.getElementById("output").value = template.trim();
   }
 
-  // テンプレートのクリア処理(アラートなし、即座にクリア)
   function clearTemplate() {
     document.getElementById("output").value = "";
   }
 
-  // メモのクリア処理
   function clearMemo() {
     document.getElementById("memo").value = "";
   }
 
-  // イベントリスナー
   document.getElementById("generateBtn").addEventListener("click", generateTemplate);
   document.getElementById("clearBtn").addEventListener("click", clearTemplate);
   document.getElementById("clearMemoBtn").addEventListener("click", clearMemo);
@@ -680,7 +707,7 @@ window.onload = function() {
   updatePhotoInstructions();
   
   // 初期高さを通知
-  setTimeout(notifyHeightChange, 300);
+  notifyHeightChangeMultiple();
   
   // マニュアル画面のスクロール対策
   const manualContent = document.querySelector('.manual-content');
@@ -698,6 +725,16 @@ window.onload = function() {
       notifyHeightChange();
     }
   });
+  
+  // 定期的な高さチェック（最初の10秒間）
+  let checkCounter = 0;
+  const heightInterval = setInterval(() => {
+    notifyHeightChange();
+    checkCounter++;
+    if (checkCounter > 20) {
+      clearInterval(heightInterval);
+    }
+  }, 500);
 };
   </script>
 </body>
