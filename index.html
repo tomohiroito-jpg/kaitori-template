@@ -10,13 +10,33 @@
     h1 { color: #30CFCF; text-align: center; margin: 0 0 10px; }
     h2 { color: #30CFCF; border-bottom: 2px solid #30CFCF; padding-bottom: 8px; margin-top: 25px; }
     h3 { color: #30CFCF; margin-top: 20px; }
-    .title-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
+    .title-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px; }
     label { display: block; margin-top: 14px; font-weight: bold; color: #30CFCF; }
     select, input, textarea { width: 100%; padding: 8px; margin-top: 6px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
     button { background-color: #30CFCF; color: white; border: none; padding: 10px 12px; margin-top: 15px; border-radius: 6px; cursor: pointer; transition: all 0.25s ease; }
     button:active { transform: scale(0.98); }
     button#clearBtn, button#clearMemoBtn { background-color: #ff6b6b; margin-left: 10px; }
-    button#manualBtn, button#backBtn { background-color: #30CFCF; margin: 0; padding: 8px 16px; font-size: 14px; }
+    button#manualBtn { 
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      color: #333; 
+      margin: 0; 
+      padding: 12px 24px; 
+      font-size: 16px; 
+      font-weight: bold;
+      border: 3px solid #ffb700;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+    button#manualBtn:hover {
+      background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
+      box-shadow: 0 6px 8px rgba(0,0,0,0.3);
+      transform: translateY(-2px);
+    }
+    button#manualBtn::before {
+      content: "📖 ";
+      font-size: 18px;
+    }
+    button#backBtn { background-color: #30CFCF; margin: 0; padding: 8px 16px; font-size: 14px; }
     textarea { height: 280px; margin-top: 10px; }
     #photoInstructions { padding: 10px; border: 1px dashed #30CFCF; border-radius: 6px; background: #f8ffff; min-height: 80px; }
     .invalid { background-color: #ffe0e0; }
@@ -37,7 +57,9 @@
   <div class="container" id="mainScreen">
     <div class="title-container">
       <h1>買取テンプレート作成ツール</h1>
-      <button id="manualBtn">マニュアル</button>
+    </div>
+    <div style="text-align: center; margin-bottom: 20px;">
+      <button id="manualBtn">使い方マニュアル</button>
     </div>
 
     <label>【担当店舗・催事】 <span style="color:red">*</span></label>
@@ -146,10 +168,10 @@
       <p>「コピーする」ボタンをクリックすると、生成されたテンプレートがクリップボードにコピーされます。<br>ボタンが一時的に緑色に変わり「コピーしました!」と表示されます。</p>
 
       <h3>🗑️ テンプレートのクリア</h3>
-      <p>「テンプレートのクリア」ボタンをクリックすると、生成されたテンプレート（出力エリア）のみがクリアされます。<br>入力した内容（店舗名、ジャンル、各項目）はそのまま残ります。</p>
+      <p>「テンプレートのクリア」ボタンをクリックすると、生成されたテンプレート（出力エリア）のみが即座にクリアされます。<br>入力した内容（店舗名、ジャンル、各項目）はそのまま残ります。</p>
 
       <h3>📝 メモ欄</h3>
-      <p>画面下部の【メモ欄】は、コピーした内容を一時的に保存したり、メモを取るために使用できます。<br>「メモのクリア」ボタンでメモ欄の内容をクリアできます。</p>
+      <p>画面下部の【メモ欄】は、コピーした内容を一時的に保存したり、メモを取るために使用できます。<br>「メモのクリア」ボタンで即座にメモ欄の内容をクリアできます。</p>
 
       <h2>⚠️ 注意事項</h2>
 
@@ -252,9 +274,9 @@ window.onload = function() {
   const subSelect = document.getElementById("subcategory");
   const subFree = document.getElementById("subcategoryFree");
 
-  const genres = ["貴金属","宝石","バッグ","財布","時計","家電","スマホ","トレカ","アパレル","お酒","記念硬貨","古銭","金券","楽器","骨董","日本刀","道具類","その他"];
+  const genres = ["貴金属・ブランドジュエリー","宝石","バッグ","財布","時計","家電","スマホ","トレカ","アパレル","お酒","記念硬貨","古銭","金券","楽器","骨董","日本刀","道具類","その他"];
   const subcategories = {
-    "貴金属": ["リング","ネックレス","ペンダント","ブレスレット","ピアス","イヤリング","ブローチ","その他"],
+    "貴金属・ブランドジュエリー": ["リング","ネックレス","ペンダント","ブレスレット","ピアス","イヤリング","ブローチ","その他"],
     "宝石": ["ダイヤ","サファイア","ルビー","エメラルド","アレキサンドライト","パール","その他"],
     "バッグ": ["トート","ハンド","ショルダー","ボストン","バニティ","ポーチ","リュック","ビジネス","その他"],
     "財布": ["長財布","二つ折り","コインケース","カードケース","その他"],
@@ -315,7 +337,7 @@ window.onload = function() {
     const red = txt => `<span style="color:red;font-weight:bold;">${txt}</span><br>`;
     const photoMap = {
       "宝石": red("【白背景で撮影すること】") + `①全体写真（真上から）<br>②石部分アップ（光を当てて）<br>③刻印アップ（ピントを合わせて）<br>④石の色が分かる写真<br>⑤ダメージ箇所（あれば）<br>⑥付属品（鑑別書・ケースなど）`,
-      "貴金属": `①全体写真<br>②刻印アップ（ピントを合わせて）<br>③比重計計測写真（比重必要な製品）`,
+      "貴金属・ブランドジュエリー": `①全体写真<br>②刻印アップ（ピントを合わせて）<br>③比重計計測写真（比重必要な製品）`,
       "時計": `①本体正面（文字盤）<br>②裏蓋／刻印（シリアル）<br>③時計全体（ベルト含む）<br>④ブレス垂れ（ロレックスのみ）<br>⑤キズ・欠損（あれば）<br>⑥付属品（外箱／保証書／ギャラ）`,
       "バッグ": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③ハンドルアップ<br>④ハンドルやショルダー付け根<br>⑤ダメージ箇所（あれば）<br>⑥付属品（箱／保証書／レシートなど）`,
       "財布": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③コインケースの中／札入れの中（劣化注意）<br>④ダメージ箇所（角すれ注意）<br>⑤付属品（箱／保証書／レシートなど）`,
@@ -328,7 +350,7 @@ window.onload = function() {
       "古銭": `①全体表面／裏面<br>②デザインアップ<br>③重量・比重を測った写真（必要であれば）`,
       "金券": `①表面<br>②裏面<br>③ダメージ箇所（あれば）`,
       "楽器": `①全体がわかる写真数枚<br>②型番／製番の記載箇所<br>③ダメージ箇所（あれば）<br>④付属品（ケース／保証書など）`,
-      "骨董": `①全体写真<br>②箱（箱書きがあれば読めるように）<br>③本体の裏面（サインがあればピントを合わせてアップで）<br>④ダメージ箇所（あれば）`,
+      "骨董": `①全体写真<br>②箱（箱書きがあれば読めるように）<br>③本体の裏面（サインがあればピントを合わせてアップで）<br>④ダメージ箇所（あれば）<br>※必要に応じて、サイズがわかる写真（メジャーをあてた写真）`,
       "日本刀": `登録証との相違が分かるよう、全体・銘・状態・登録証の写真を推奨`,
       "道具類": `型番などがわかる部分（ラベルなど）があれば撮影推奨`,
       "その他": `①全体写真<br>②特徴が分かるアップ写真<br>③ダメージ箇所（あれば）<br>④付属品（あれば）`
@@ -388,7 +410,7 @@ window.onload = function() {
 
     const templates = {
       "宝石": [["【アイテム種別】","itemType"],["【メイン石の種類】","mainStone"],["【メイン石の重量（ct）】","mainStoneWeight"],["【素材】","material"],["【刻印内容】","engraving"],["【メイン石詳細】","stoneDetail"],["【総重量】","weight"],["【付属品】","accessories"]],
-      "貴金属": [["【素材】","material"],["【重量】","weight"],["【刻印】","engraving"]],
+      "貴金属・ブランドジュエリー": [["【型番・モデル名】","model"],["【素材】","material"],["【重量】","weight"],["【刻印】","engraving"]],
       "時計": [["【モデル名・型番】","model"],["【動作確認】","operation"],["【ケースサイズ】","caseSize"],["【状態】","condition"],["【付属品】","accessories"]],
       "バッグ": [["【型番／モデル名】","model"],["【シリアル】","serial"],["【サイズ】","size"],["【状態】","condition"],["【付属品】","accessories"]],
       "財布": [["【型番／モデル名】","model"],["【シリアル】","serial"],["【状態】","condition"],["【付属品】","accessories"]],
