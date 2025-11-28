@@ -377,11 +377,16 @@ window.onload = function() {
     "スマホ": "状態備考:例)ガラス欠けあり。"
   };
 
-  // iframe内の高さを親に通知する関数
+  // iframe内の高さを親に通知する関数（強化版）
   function notifyHeightChange() {
     if (window.parent !== window) {
-      const height = document.documentElement.scrollHeight;
+      const bodyHeight = document.body.scrollHeight;
+      const htmlHeight = document.documentElement.scrollHeight;
+      const containerHeight = document.querySelector('.container:not(.hidden)')?.scrollHeight || 0;
+      const height = Math.max(bodyHeight, htmlHeight, containerHeight);
+      
       window.parent.postMessage({ type: 'resize', height: height }, '*');
+      console.log('📏 Height notification sent:', height);
     }
   }
 
@@ -396,13 +401,18 @@ window.onload = function() {
     attributes: true
   });
 
-  // 画面切り替え
+  // 画面切り替え（強化版 - マニュアル対応）
   function switchScreen(hideScreen, showScreen) {
     hideScreen.classList.add("hidden");
     showScreen.classList.remove("hidden");
     window.scrollTo(0, 0);
-    // 少し遅延させてから高さを通知
-    setTimeout(notifyHeightChange, 100);
+    
+    // 画面切り替え直後に複数回高さを通知（確実に反映させるため）
+    setTimeout(notifyHeightChange, 50);
+    setTimeout(notifyHeightChange, 200);
+    setTimeout(notifyHeightChange, 500);
+    setTimeout(notifyHeightChange, 1000);
+    setTimeout(notifyHeightChange, 1500);
   }
 
   manualBtn.addEventListener("click", () => switchScreen(mainScreen, manualScreen));
@@ -671,6 +681,23 @@ window.onload = function() {
   
   // 初期高さを通知
   setTimeout(notifyHeightChange, 300);
+  
+  // マニュアル画面のスクロール対策
+  const manualContent = document.querySelector('.manual-content');
+  if (manualContent) {
+    observer.observe(manualContent, {
+      childList: true,
+      subtree: true,
+      attributes: true
+    });
+  }
+
+  // 親ウィンドウからのメッセージを受信
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'getHeight') {
+      notifyHeightChange();
+    }
+  });
 };
   </script>
 </body>
