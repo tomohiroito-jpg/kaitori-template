@@ -8,24 +8,42 @@
     body { background-color: #f0fdfd; font-family: sans-serif; color: #333; margin: 0; padding: 20px; }
     .container { max-width: 720px; margin: auto; padding: 20px; border: 2px solid #30CFCF; border-radius: 10px; background-color: #fff; }
     h1 { color: #30CFCF; text-align: center; margin: 0 0 10px; }
+    h2 { color: #30CFCF; border-bottom: 2px solid #30CFCF; padding-bottom: 8px; margin-top: 25px; }
+    h3 { color: #30CFCF; margin-top: 20px; }
+    .title-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
     label { display: block; margin-top: 14px; font-weight: bold; color: #30CFCF; }
     select, input, textarea { width: 100%; padding: 8px; margin-top: 6px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
     button { background-color: #30CFCF; color: white; border: none; padding: 10px 12px; margin-top: 15px; border-radius: 6px; cursor: pointer; transition: all 0.25s ease; }
     button:active { transform: scale(0.98); }
+    button#clearBtn, button#clearMemoBtn { background-color: #ff6b6b; margin-left: 10px; }
+    button#manualBtn, button#backBtn { background-color: #30CFCF; margin: 0; padding: 8px 16px; font-size: 14px; }
     textarea { height: 280px; margin-top: 10px; }
     #photoInstructions { padding: 10px; border: 1px dashed #30CFCF; border-radius: 6px; background: #f8ffff; min-height: 80px; }
     .invalid { background-color: #ffe0e0; }
     select option { background-color: #fff; color: #333; }
+    .button-group { display: flex; gap: 10px; }
+    .hidden { display: none; }
+    .manual-content { line-height: 1.8; }
+    .manual-content p { margin: 10px 0; }
+    .manual-content ul { margin: 10px 0; padding-left: 25px; }
+    .manual-content li { margin: 8px 0; }
+    .step-box { background-color: #f8ffff; border: 1px solid #30CFCF; border-radius: 6px; padding: 15px; margin: 15px 0; }
+    .note-box { background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px; margin: 15px 0; }
+    .example-box { background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 6px; padding: 12px; margin: 15px 0; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>買取テンプレート作成ツール</h1>
+  <!-- メイン画面 -->
+  <div class="container" id="mainScreen">
+    <div class="title-container">
+      <h1>買取テンプレート作成ツール</h1>
+      <button id="manualBtn">マニュアル</button>
+    </div>
 
-    <label>【担当店舗・催事】</label>
+    <label>【担当店舗・催事】 <span style="color:red">*</span></label>
     <input type="text" id="store">
 
-    <label>【ジャンル】</label>
+    <label>【ジャンル】 <span style="color:red">*</span></label>
     <select id="genre"></select>
 
     <label>【中分類】</label>
@@ -42,11 +60,194 @@
 
     <button id="generateBtn">テンプレートを生成</button>
     <textarea id="output" readonly></textarea>
-    <button id="copyBtn">コピーする</button>
+    <div class="button-group">
+      <button id="copyBtn">コピーする</button>
+      <button id="clearBtn">テンプレートのクリア</button>
+    </div>
+
+    <label>【メモ欄(コピーした内容をペースト可能)】</label>
+    <textarea id="memo" placeholder="ここにコピーした内容をペーストできます"></textarea>
+    <div class="button-group">
+      <button id="clearMemoBtn">メモのクリア</button>
+    </div>
   </div>
 
-<script>
+  <!-- マニュアル画面 -->
+  <div class="container hidden" id="manualScreen">
+    <div class="title-container">
+      <h1>使い方マニュアル</h1>
+      <button id="backBtn">ツールに戻る</button>
+    </div>
+
+    <div class="manual-content">
+      <h2>📖 このツールについて</h2>
+      <p>買取テンプレート作成ツールは、買取業務で使用するテンプレートを簡単に作成できるツールです。<br>ジャンルごとに必要な項目が自動的に表示され、効率的にテンプレートを生成できます。</p>
+
+      <h2>🚀 基本的な使い方</h2>
+      
+      <div class="step-box">
+        <h3>ステップ1: 必須項目を入力</h3>
+        <ul>
+          <li><strong>【担当店舗・催事】</strong>: 担当している"店舗名"または"催事"を入力します（必須）</li>
+          <li><strong>【ジャンル】</strong>: プルダウンから該当するジャンルを選択します（必須）</li>
+        </ul>
+        <div class="note-box">
+          ⚠️ この2つの項目は必須です。未入力の場合、テンプレート生成時にアラートが表示されます。
+        </div>
+      </div>
+
+      <div class="step-box">
+        <h3>ステップ2: ジャンル別項目を入力</h3>
+        <p>ジャンルを選択すると、そのジャンルに応じた入力項目が自動的に表示されます。</p>
+        <ul>
+          <li><strong>【中分類】</strong>: ジャンルによってプルダウンが表示されます（任意）</li>
+          <li><strong>【ブランド名】</strong>: ブランド品の場合は入力します（任意）</li>
+          <li><strong>各種詳細項目</strong>: ジャンルごとに異なる項目が表示されます</li>
+        </ul>
+      </div>
+
+      <div class="step-box">
+        <h3>ステップ3: 写真撮影指示を確認</h3>
+        <p>ジャンルを選択すると、【写真撮影指示】欄に撮影すべき写真の指示が自動的に表示されます。<br>こちらを参考に商品の写真を撮影してください。</p>
+      </div>
+
+      <div class="step-box">
+        <h3>ステップ4: テンプレート生成</h3>
+        <ul>
+          <li><strong>「テンプレートを生成」ボタン</strong>をクリック</li>
+          <li>入力した内容が整形されてテキストエリアに表示されます</li>
+          <li><strong>「コピーする」ボタン</strong>でクリップボードにコピーできます</li>
+        </ul>
+      </div>
+
+      <h2>✨ ジャンル別の特徴</h2>
+
+      <h3>🔸 状態欄がプルダウン式のジャンル</h3>
+      <p>以下のジャンルでは【状態】欄がプルダウン選択＋自由入力の組み合わせになっています:</p>
+      <ul>
+        <li><strong>バッグ・財布</strong>: 未使用品/A品～D品から選択 + 状態備考</li>
+        <li><strong>時計</strong>: 未使用品/A品～D品から選択 + 状態備考</li>
+        <li><strong>アパレル</strong>: 未使用品/A品～D品から選択 + 状態備考</li>
+        <li><strong>家電</strong>: 未使用品/A品～D品から選択 + 状態備考</li>
+        <li><strong>スマホ</strong>: 未使用品/A品～D品から選択 + 状態備考</li>
+      </ul>
+
+      <h3>🔸 特殊なプルダウン項目があるジャンル</h3>
+      <ul>
+        <li><strong>時計</strong>: 【動作確認】で「動作」または「不動」を選択</li>
+        <li><strong>家電</strong>: 【動作確認】で「動作確認済み」「通電確認済」「未チェック」を選択</li>
+        <li><strong>スマホ</strong>: 【ネットワーク利用制限】で「〇」「△」「×」「－」を選択</li>
+        <li><strong>日本刀</strong>: 【白鞘or拵】で「白鞘」「拵」「白鞘と拵どちらも付属」を選択</li>
+      </ul>
+
+      <h2>💡 便利な機能</h2>
+
+      <h3>📋 コピー機能</h3>
+      <p>「コピーする」ボタンをクリックすると、生成されたテンプレートがクリップボードにコピーされます。<br>ボタンが一時的に緑色に変わり「コピーしました!」と表示されます。</p>
+
+      <h3>🗑️ テンプレートのクリア</h3>
+      <p>「テンプレートのクリア」ボタンをクリックすると、生成されたテンプレート（出力エリア）のみがクリアされます。<br>入力した内容（店舗名、ジャンル、各項目）はそのまま残ります。</p>
+
+      <h3>📝 メモ欄</h3>
+      <p>画面下部の【メモ欄】は、コピーした内容を一時的に保存したり、メモを取るために使用できます。<br>「メモのクリア」ボタンでメモ欄の内容をクリアできます。</p>
+
+      <h2>⚠️ 注意事項</h2>
+
+      <div class="note-box">
+        <ul>
+          <li>プルダウンで「選択してください」のままの項目は、テンプレートに反映されません</li>
+          <li>空欄の項目も、テンプレートには含まれません（入力した項目のみ反映されます）</li>
+          <li>未選択のプルダウンは薄いピンク色で表示されます（視覚的な確認用）</li>
+          <li>【担当店舗・催事】と【ジャンル】は必須項目です</li>
+        </ul>
+      </div>
+
+      <h2>📸 写真撮影のポイント</h2>
+
+      <div class="example-box">
+        <p><strong>写真撮影指示は必ず確認してください:</strong></p>
+        <ul>
+          <li>ジャンルごとに撮影すべき箇所が異なります</li>
+          <li>宝石は「白背景で撮影」など、特別な指示がある場合があります</li>
+          <li>シリアル番号や刻印は、ピントを合わせてアップで撮影</li>
+          <li>ダメージ箇所は必ず撮影（査定の重要な判断材料になります）</li>
+          <li>付属品（箱、保証書、ギャランティカードなど）も忘れずに撮影</li>
+        </ul>
+      </div>
+
+      <h2>🎯 よくある使い方の例</h2>
+
+      <div class="example-box">
+        <h3>例1: ブランドバッグの場合</h3>
+        <ol>
+          <li>【担当店舗・催事】に店舗名を入力</li>
+          <li>【ジャンル】で「バッグ」を選択</li>
+          <li>【中分類】で「ハンド」を選択（任意）</li>
+          <li>【ブランド名】に「ヴィトン」などを入力</li>
+          <li>【型番／モデル名】【シリアル】【サイズ】などを入力</li>
+          <li>【状態】でプルダウンから「AB品」などを選択し、備考欄に「角に擦れあり」などを入力</li>
+          <li>【付属品】に「保存袋」などを入力</li>
+          <li>「テンプレートを生成」をクリック</li>
+        </ol>
+      </div>
+
+      <div class="example-box">
+        <h3>例2: 腕時計の場合</h3>
+        <ol>
+          <li>【担当店舗・催事】に店舗名を入力</li>
+          <li>【ジャンル】で「時計」を選択</li>
+          <li>【中分類】で「自動巻き」を選択（任意）</li>
+          <li>【ブランド名】に「ロレックス」などを入力</li>
+          <li>【モデル名・型番】に「サブマリーナー 116610LN」などを入力</li>
+          <li>【動作確認】で「動作」「不動」を選択</li>
+          <li>【ケースサイズ】に「40mm」などを入力</li>
+          <li>【状態】でプルダウンから「A品」などを選択し、備考欄に必要があれば追記</li>
+          <li>【付属品】に「箱・保証書・ギャランティカード」などを入力</li>
+          <li>「テンプレートを生成」をクリック</li>
+        </ol>
+      </div>
+
+      <h2>🔄 作業の流れ</h2>
+      <div class="step-box">
+        <ol>
+          <li><strong>商品を確認</strong></li>
+          <li><strong>このツールで情報を入力</strong></li>
+          <li><strong>写真撮影指示を確認</strong></li>
+          <li><strong>指示に従って写真を撮影</strong></li>
+          <li><strong>テンプレートを生成してコピー</strong></li>
+          <li><strong>社内システムや連絡ツールに貼り付け</strong></li>
+        </ol>
+      </div>
+
+      <h2>❓ トラブルシューティング</h2>
+      <div class="note-box">
+        <p><strong>Q: テンプレート生成時にアラートが出る</strong><br>
+        A: 【担当店舗・催事】と【ジャンル】が入力されているか確認してください。</p>
+
+        <p><strong>Q: 入力した項目がテンプレートに反映されない</strong><br>
+        A: プルダウンが「選択してください」のままになっていないか確認してください。空欄の項目は反映されません。</p>
+
+        <p><strong>Q: コピーボタンが反応しない</strong><br>
+        A: 先に「テンプレートを生成」ボタンをクリックして、テンプレートを生成してください。</p>
+
+        <p><strong>Q: 間違えて入力した内容をやり直したい</strong><br>
+        A: 各入力欄を個別に修正するか、ブラウザをリロードして最初からやり直すことができます。</p>
+      </div>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <button id="backBtn2">ツールに戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
 window.onload = function() {
+  const mainScreen = document.getElementById("mainScreen");
+  const manualScreen = document.getElementById("manualScreen");
+  const manualBtn = document.getElementById("manualBtn");
+  const backBtn = document.getElementById("backBtn");
+  const backBtn2 = document.getElementById("backBtn2");
+
   const genreSelect = document.getElementById("genre");
   const subSelect = document.getElementById("subcategory");
   const subFree = document.getElementById("subcategoryFree");
@@ -54,11 +255,11 @@ window.onload = function() {
   const genres = ["貴金属","宝石","バッグ","財布","時計","家電","スマホ","トレカ","アパレル","お酒","記念硬貨","古銭","金券","楽器","骨董","日本刀","道具類","その他"];
   const subcategories = {
     "貴金属": ["リング","ネックレス","ペンダント","ブレスレット","ピアス","イヤリング","ブローチ","その他"],
-    "宝石": ["ダイヤ","サファイア","ルビー","エメラルド","アレキサンドライト","パール","その他"], // パール追加
+    "宝石": ["ダイヤ","サファイア","ルビー","エメラルド","アレキサンドライト","パール","その他"],
     "バッグ": ["トート","ハンド","ショルダー","ボストン","バニティ","ポーチ","リュック","ビジネス","その他"],
     "財布": ["長財布","二つ折り","コインケース","カードケース","その他"],
     "時計": ["自動巻き","手巻き","クオーツ","電波","スマートウォッチ","その他"],
-    "家電": ["パソコン","タブレット","カメラ","ゲーム機","オーディオ機器","映像機器","生活家電","その他"], // カメラ追加
+    "家電": ["パソコン","タブレット","カメラ","ゲーム機","オーディオ機器","映像機器","生活家電","その他"],
     "スマホ": ["アップル","アンドロイド","その他"],
     "トレカ": ["ポケモン","遊戯王","ワンピース","その他"],
     "アパレル": ["アウター","シャツ","ボトムス","靴","その他"],
@@ -73,12 +274,69 @@ window.onload = function() {
     "その他": []
   };
 
+  // 状態備考の例文マップ
+  const conditionPlaceholders = {
+    "バッグ": "状態備考:例）全体に薄くカビあり。",
+    "財布": "状態備考:例）全体に薄くカビあり。",
+    "時計": "状態備考:例）文字盤変色している。",
+    "アパレル": "状態備考:例）襟に変色あり。",
+    "家電": "状態備考:例）側面にへこみあり。",
+    "スマホ": "状態備考:例）ガラス欠けあり。"
+  };
+
+  // 画面切り替え
+  manualBtn.addEventListener("click", () => {
+    mainScreen.classList.add("hidden");
+    manualScreen.classList.remove("hidden");
+    window.scrollTo(0, 0);
+  });
+
+  backBtn.addEventListener("click", () => {
+    manualScreen.classList.add("hidden");
+    mainScreen.classList.remove("hidden");
+    window.scrollTo(0, 0);
+  });
+
+  backBtn2.addEventListener("click", () => {
+    manualScreen.classList.add("hidden");
+    mainScreen.classList.remove("hidden");
+    window.scrollTo(0, 0);
+  });
+
   function markSelectValidity(sel) {
     if (!sel) return;
     sel.classList.toggle('invalid', sel.value === "");
   }
 
-  // 初期化
+  // 写真撮影指示
+  function updatePhotoInstructions() {
+    const genre = document.getElementById("genre").value;
+    const photo = document.getElementById("photoInstructions");
+    const red = txt => `<span style="color:red;font-weight:bold;">${txt}</span><br>`;
+    const photoMap = {
+      "宝石": red("【白背景で撮影すること】") + `①全体写真（真上から）<br>②石部分アップ（光を当てて）<br>③刻印アップ（ピントを合わせて）<br>④石の色が分かる写真<br>⑤ダメージ箇所（あれば）<br>⑥付属品（鑑別書・ケースなど）`,
+      "貴金属": `①全体写真<br>②刻印アップ（ピントを合わせて）<br>③比重計計測写真（比重必要な製品）`,
+      "時計": `①本体正面（文字盤）<br>②裏蓋／刻印（シリアル）<br>③時計全体（ベルト含む）<br>④ブレス垂れ（ロレックスのみ）<br>⑤キズ・欠損（あれば）<br>⑥付属品（外箱／保証書／ギャラ）`,
+      "バッグ": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③ハンドルアップ<br>④ハンドルやショルダー付け根<br>⑤ダメージ箇所（あれば）<br>⑥付属品（箱／保証書／レシートなど）`,
+      "財布": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③コインケースの中／札入れの中（劣化注意）<br>④ダメージ箇所（角すれ注意）<br>⑤付属品（箱／保証書／レシートなど）`,
+      "スマホ": `①全体正面／背面<br>②ダメージ箇所（へこみ、ガラス割れ注意）<br>③付属品（箱／コード類／説明書など）`,
+      "家電": `①全体写真<br>②型番などが分かる写真<br>③付属品（コード類／説明書／箱など）<br>④ダメージ箇所（あれば）`,
+      "トレカ": `①正面写真<br>②背面写真<br>③角をアップで<br>④ダメージ箇所（あれば）<br>⑤鑑定ケース（あれば内容が分かるように）`,
+      "アパレル": `①全体正面／背面<br>②ランドリータグ（型番などが記載のもの）<br>③ブランドロゴタグ<br>④ダメージ箇所（襟、袖、裾は汚れやすいため注意）`,
+      "お酒": `①全体写真<br>②キャップ<br>③ラベル（表／裏）<br>④箱<br>⑤液体の容量（水面の高さがわかる写真）<br>⑥ダメージ／漏れの箇所（あれば）<br>${red("※匂いがする場合は漏れている")}`,
+      "記念硬貨": `①全体表面／裏面<br>②デザインアップ<br>③重量・比重を測った写真（必要であれば）`,
+      "古銭": `①全体表面／裏面<br>②デザインアップ<br>③重量・比重を測った写真（必要であれば）`,
+      "金券": `①表面<br>②裏面<br>③ダメージ箇所（あれば）`,
+      "楽器": `①全体がわかる写真数枚<br>②型番／製番の記載箇所<br>③ダメージ箇所（あれば）<br>④付属品（ケース／保証書など）`,
+      "骨董": `①全体写真<br>②箱（箱書きがあれば読めるように）<br>③本体の裏面（サインがあればピントを合わせてアップで）<br>④ダメージ箇所（あれば）`,
+      "日本刀": `登録証との相違が分かるよう、全体・銘・状態・登録証の写真を推奨`,
+      "道具類": `型番などがわかる部分（ラベルなど）があれば撮影推奨`,
+      "その他": `①全体写真<br>②特徴が分かるアップ写真<br>③ダメージ箇所（あれば）<br>④付属品（あれば）`
+    };
+    photo.innerHTML = photoMap[genre] || "";
+  }
+
+  // ジャンル初期化
   genreSelect.innerHTML = '<option value="">選択してください</option>';
   genres.forEach(g => {
     const opt = document.createElement("option");
@@ -88,6 +346,7 @@ window.onload = function() {
   });
   markSelectValidity(genreSelect);
 
+  // ジャンル変更時の処理
   genreSelect.addEventListener("change", () => {
     const genre = genreSelect.value;
     subSelect.innerHTML = '<option value="">選択してください</option>';
@@ -131,10 +390,10 @@ window.onload = function() {
       "宝石": [["【アイテム種別】","itemType"],["【メイン石の種類】","mainStone"],["【メイン石の重量（ct）】","mainStoneWeight"],["【素材】","material"],["【刻印内容】","engraving"],["【メイン石詳細】","stoneDetail"],["【総重量】","weight"],["【付属品】","accessories"]],
       "貴金属": [["【素材】","material"],["【重量】","weight"],["【刻印】","engraving"]],
       "時計": [["【モデル名・型番】","model"],["【動作確認】","operation"],["【ケースサイズ】","caseSize"],["【状態】","condition"],["【付属品】","accessories"]],
-      "バッグ": [["【型番／モデル名】","model"],["【シリアル】","serial"],["【サイズ】","size"],["【状態】","condition"],["【付属品】","accessories"]], // 修正済み
-      "財布": [["【型番／モデル名】","model"],["【シリアル】","serial"],["【状態】","condition"],["【付属品】","accessories"]], // 修正済み
+      "バッグ": [["【型番／モデル名】","model"],["【シリアル】","serial"],["【サイズ】","size"],["【状態】","condition"],["【付属品】","accessories"]],
+      "財布": [["【型番／モデル名】","model"],["【シリアル】","serial"],["【状態】","condition"],["【付属品】","accessories"]],
       "スマホ": [["【機種名／型番】","model"],["【容量】","capacity"],["【キャリア】","carrier"],["【ネットワーク利用制限】","network"],["【バッテリー最大容量】","battery"],["【状態】","condition"],["【付属品】","accessories"]],
-            "家電": [["【型番】","model"],["【年式】","year"],["【動作確認】","operation"],["【状態】","condition"],["【付属品】","accessories"]],
+      "家電": [["【型番】","model"],["【年式】","year"],["【動作確認】","operation"],["【状態】","condition"],["【付属品】","accessories"]],
       "トレカ": [["【カード名】","cardName"],["【レアリティ】","rarity"],["【状態】","condition"],["【鑑定情報】","grading"]],
       "アパレル": [["【型番など（わかれば）】","itemType"],["【サイズ】","size"],["【状態】","condition"],["【付属品】","accessories"]],
       "お酒": [["【銘柄】","brandField"],["【容量】","volume"],["【度数】","alcohol"],["【状態】","condition"],["【付属品】","accessories"]],
@@ -143,16 +402,36 @@ window.onload = function() {
       "金券": [["【種類】","type"],["【額面】","value"],["【状態】","condition"]],
       "楽器": [["【種類】","type"],["【メーカー】","maker"],["【型番】","model"],["【状態】","condition"],["【付属品】","accessories"]],
       "骨董": [["【種類】","type"],["【作家名・銘】","artist"],["【状態】","condition"],["【付属品】","accessories"]],
-      "日本刀": [["【銘】","signature"],["【長さ】","length"],["【白鞘or拵】","mounting"],["【状態】","condition"]], // ← registration → length に修正済み
+      "日本刀": [["【銘】","signature"],["【長さ】","length"],["【白鞘or拵】","mounting"],["【状態】","condition"]],
       "道具類": [["【種類】","type"],["【メーカー】","maker"],["【型番】","model"],["【状態】","condition"],["【付属品】","accessories"]]
     };
 
     const commonFields = [["【備考】","notes"],["【お客様希望額】","wish"],["【見立て金額】","estimate"]];
     const fields = (templates[genre] || []).concat(commonFields);
 
+    // プルダウン＋自由入力が必要なジャンル（トレカを除外）
+    const genresWithConditionDropdown = ["バッグ", "財布", "時計", "アパレル", "家電", "スマホ"];
+
     fields.forEach(([label, id]) => {
       let html = `<label>${label}</label>`;
-      if (genre === "時計" && id === "operation") {
+      
+      // 状態欄：指定されたジャンルはプルダウン＋備考欄
+      if (genresWithConditionDropdown.includes(genre) && id === "condition") {
+        const placeholder = conditionPlaceholders[genre] || "状態備考を入力";
+        html += `<div style="display:flex; gap:8px; align-items:center;">
+          <select id="${id}" class="invalid">
+            <option value="">選択してください</option>
+            <option value="未使用品">未使用品</option>
+            <option value="A品">A品</option>
+            <option value="AB品">AB品</option>
+            <option value="B品">B品</option>
+            <option value="BC品">BC品</option>
+            <option value="C品">C品</option>
+            <option value="D品">D品</option>
+          </select>
+          <input type="text" id="${id}Notes" placeholder="${placeholder}">
+        </div>`;
+      } else if (genre === "時計" && id === "operation") {
         html += `<select id="${id}" class="invalid">
           <option value="">選択してください</option>
           <option value="動作">動作</option>
@@ -173,7 +452,7 @@ window.onload = function() {
           <option value="通電確認済">通電確認済</option>
           <option value="未チェック">未チェック</option>
         </select>`;
-      } else if (genre === "日本刀" && id === "length") { // ← 修正済み
+      } else if (genre === "日本刀" && id === "length") {
         html += `<input type="text" id="${id}">`;
         html += `<label>【白鞘or拵】</label>
         <select id="mounting" class="invalid">
@@ -197,38 +476,7 @@ window.onload = function() {
     });
   }
 
-  // 写真撮影指示（元のコードそのまま）
-  function updatePhotoInstructions() {
-    const genre = document.getElementById("genre").value;
-    const photo = document.getElementById("photoInstructions");
-    const red = txt => `<span style="color:red;font-weight:bold;">${txt}</span><br>`;
-    const photoMap = {
-      "宝石": red("【白背景で撮影すること】") + `①全体写真（真上から）<br>②石部分アップ（光を当てて）<br>③刻印アップ（ピントを合わせて）<br>④石の色が分かる写真<br>⑤ダメージ箇所（あれば）<br>⑥付属品（鑑別書・ケースなど）`,
-      "貴金属": `①全体写真<br>②刻印アップ（ピントを合わせて）<br>③比重計計測写真（比重必要な製品）`,
-      "時計": `①本体正面（文字盤）<br>②裏蓋／刻印（シリアル）<br>③時計全体（ベルト含む）<br>④ブレス垂れ（ロレックスのみ）<br>⑤キズ・欠損（あれば）<br>⑥付属品（外箱／保証書／ギャラ）`,
-      "バッグ": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③ハンドルアップ<br>④ハンドルやショルダー付け根<br>⑤ダメージ箇所（あれば）<br>⑥付属品（箱／保証書／レシートなど）`,
-      "財布": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③コインケースの中／札入れの中（劣化注意）<br>④ダメージ箇所（角すれ注意）<br>⑤付属品（箱／保証書／レシートなど）`,
-      "スマホ": `①全体正面／背面<br>②ダメージ箇所（へこみ、ガラス割れ注意）<br>③付属品（箱／コード類／説明書など）`,
-      "家電": `①全体写真<br>
-②型番などが分かる写真<br>
-③付属品（コード類／説明書／箱など）<br>
-④ダメージ箇所（あれば）`,
-      "トレカ": `①正面写真<br>②背面写真<br>③角をアップで<br>④ダメージ箇所（あれば）<br>⑤鑑定ケース（あれば内容が分かるように）`,
-      "アパレル": `①全体正面／背面<br>②ランドリータグ（型番などが記載のもの）<br>③ブランドロゴタグ<br>④ダメージ箇所（襟、袖、裾は汚れやすいため注意）`,
-      "お酒": `①全体写真<br>②キャップ<br>③ラベル（表／裏）<br>④箱<br>⑤液体の容量（水面の高さがわかる写真）<br>⑥ダメージ／漏れの箇所（あれば）`,
-      "記念硬貨": `①全体表面／裏面<br>②デザインアップ<br>③重量・比重を測った写真（必要であれば）`,
-      "古銭": `①全体表面／裏面<br>②デザインアップ<br>③重量・比重を測った写真（必要であれば）`,
-      "金券": `①表面<br>②裏面<br>③ダメージ箇所（あれば）`,
-      "楽器": `①全体がわかる写真数枚<br>②型番／製番の記載箇所<br>③ダメージ箇所（あれば）<br>④付属品（ケース／保証書など）`,
-            "骨董": `①全体写真<br>②箱（箱書きがあれば読めるように）<br>③本体の裏面（サインがあればピントを合わせてアップで）<br>④ダメージ箇所（あれば）`,
-      "日本刀": `登録証との相違が分かるよう、全体・銘・状態・登録証の写真を推奨`,
-      "道具類": `型番などがわかる部分（ラベルなど）があれば撮影推奨`,
-      "その他": `①全体写真<br>②特徴が分かるアップ写真<br>③ダメージ箇所（あれば）<br>④付属品（あれば）`
-    };
-    photo.innerHTML = photoMap[genre] || "";
-  }
-
-  // テンプレート生成（入力していない項目は反映しない）
+  // テンプレート生成（状態欄：プルダウン＋備考を1行にまとめる）
   function generateTemplate() {
     const store = document.getElementById("store").value;
     const genre = document.getElementById("genre").value;
@@ -236,7 +484,6 @@ window.onload = function() {
     const brand = document.getElementById("brand").value;
     const fields = document.querySelectorAll("#dynamicFields input, #dynamicFields select");
 
-    // 必須チェックは【担当店舗・催事】と【ジャンル】のみ
     if (!store || !genre) {
       alert("【担当店舗・催事】と【ジャンル】は必須です。");
       return;
@@ -246,10 +493,30 @@ window.onload = function() {
     if (subVal) template += `【中分類】\n${subVal}\n`;
     if (brand) template += `【ブランド名】\n${brand}\n`;
 
+    const genresWithConditionDropdown = ["バッグ", "財布", "時計", "アパレル", "家電", "スマホ"];
+
     fields.forEach(field => {
       const label = field.previousElementSibling?.textContent || "";
       const value = field.value || "";
-      if (value && value !== "選択してください") { // 入力済みのみ反映
+
+      // 状態欄：指定されたジャンルはプルダウン＋備考を1行にまとめる
+      if (genresWithConditionDropdown.includes(genre) && field.id === "condition") {
+        const notes = document.getElementById("conditionNotes")?.value || "";
+        const combined = notes ? `${value}　${notes}` : value;
+
+        if (value && value !== "選択してください") {
+          template += `【状態】\n${combined}\n`;
+        }
+        return;
+      }
+
+      // 状態備考は通常処理に通さない
+      if (field.id === "conditionNotes") {
+        return;
+      }
+
+      // 通常の項目（空文字と「選択してください」は除外）
+      if (value && value !== "選択してください") {
         template += `${label}\n${value}\n`;
       }
     });
@@ -257,25 +524,33 @@ window.onload = function() {
     document.getElementById("output").value = template.trim();
   }
 
-  document.getElementById("generateBtn").addEventListener("click", generateTemplate);
+  // テンプレートのクリア処理（アラートなし、即座にクリア）
+  function clearTemplate() {
+    document.getElementById("output").value = "";
+  }
 
-  // コピー処理（元のコードそのまま）
-  const copyBtn = document.getElementById("copyBtn");
-  copyBtn.addEventListener("click", () => {
+  // メモのクリア処理（アラートなし、即座にクリア）
+  function clearMemo() {
+    document.getElementById("memo").value = "";
+  }
+
+  // イベントリスナー
+  document.getElementById("generateBtn").addEventListener("click", generateTemplate);
+  document.getElementById("clearBtn").addEventListener("click", clearTemplate);
+  document.getElementById("clearMemoBtn").addEventListener("click", clearMemo);
+  
+  document.getElementById("copyBtn").addEventListener("click", () => {
     const output = document.getElementById("output");
     output.select();
     document.execCommand("copy");
 
-    const originalText = copyBtn.textContent;
-    const originalColor = copyBtn.style.backgroundColor;
-    copyBtn.textContent = "コピーしました！";
-    copyBtn.style.backgroundColor = "#4CAF50"; // 緑
-    copyBtn.style.boxShadow = "0 0 0 3px rgba(76,175,80,0.25) inset";
-
+    const btn = document.getElementById("copyBtn");
+    const originalText = btn.textContent;
+    btn.textContent = "コピーしました！";
+    btn.style.backgroundColor = "#4CAF50";
     setTimeout(() => {
-      copyBtn.textContent = originalText;
-      copyBtn.style.backgroundColor = originalColor || "#30CFCF";
-      copyBtn.style.boxShadow = "none";
+      btn.textContent = originalText;
+      btn.style.backgroundColor = "#30CFCF";
     }, 1500);
   });
 
@@ -283,6 +558,6 @@ window.onload = function() {
   updateDynamicFields();
   updatePhotoInstructions();
 };
-</script>
+  </script>
 </body>
 </html>
