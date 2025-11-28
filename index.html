@@ -5,43 +5,101 @@
   <title>買取テンプレート作成ツール</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { background-color: #f0fdfd; font-family: sans-serif; color: #333; margin: 0; padding: 20px; }
-    .container { max-width: 720px; margin: auto; padding: 20px; border: 2px solid #30CFCF; border-radius: 10px; background-color: #fff; }
+    * { box-sizing: border-box; -webkit-overflow-scrolling: touch; }
+    html, body { 
+      margin: 0; 
+      padding: 0; 
+      width: 100%; 
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      position: relative;
+    }
+    body { 
+      background-color: #f0fdfd; 
+      font-family: sans-serif; 
+      color: #333; 
+      padding: 20px; 
+      min-height: 100vh;
+    }
+    .container { 
+      max-width: 720px; 
+      margin: auto; 
+      padding: 20px; 
+      border: 2px solid #30CFCF; 
+      border-radius: 10px; 
+      background-color: #fff;
+      position: relative;
+      overflow: visible;
+    }
     h1 { color: #30CFCF; text-align: center; margin: 0 0 10px; }
     h2 { color: #30CFCF; border-bottom: 2px solid #30CFCF; padding-bottom: 8px; margin-top: 25px; }
     h3 { color: #30CFCF; margin-top: 20px; }
-    .title-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px; }
+    .title-container { display: flex; justify-content: center; align-items: center; flex-direction: column; margin-bottom: 20px; }
+    .manual-btn-wrapper { text-align: center; margin-top: 15px; width: 100%; }
     label { display: block; margin-top: 14px; font-weight: bold; color: #30CFCF; }
-    select, input, textarea { width: 100%; padding: 8px; margin-top: 6px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-    button { background-color: #30CFCF; color: white; border: none; padding: 10px 12px; margin-top: 15px; border-radius: 6px; cursor: pointer; transition: all 0.25s ease; }
+    select, input, textarea { 
+      width: 100%; 
+      padding: 8px; 
+      margin-top: 6px; 
+      border: 1px solid #ccc; 
+      border-radius: 6px; 
+      font-size: 14px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    button { 
+      background-color: #30CFCF; 
+      color: white; 
+      border: none; 
+      padding: 10px 12px; 
+      margin-top: 15px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      transition: all 0.25s ease;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
     button:active { transform: scale(0.98); }
     button#clearBtn, button#clearMemoBtn { background-color: #ff6b6b; margin-left: 10px; }
     button#manualBtn { 
-      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-      color: #333; 
-      margin: 0; 
-      padding: 12px 24px; 
+      background: linear-gradient(135deg, #ffd700, #ffed4e); 
+      color: #000; 
       font-size: 16px; 
-      font-weight: bold;
-      border: 3px solid #ffb700;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-      cursor: pointer;
+      font-weight: bold; 
+      padding: 12px 24px; 
+      border: 3px solid #d4af37; 
+      box-shadow: 0 4px 8px rgba(212, 175, 55, 0.4);
+      margin: 0;
     }
-    button#manualBtn:hover {
-      background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
-      box-shadow: 0 6px 8px rgba(0,0,0,0.3);
-      transform: translateY(-2px);
+    button#manualBtn:hover { 
+      background: linear-gradient(135deg, #ffed4e, #ffd700); 
+      box-shadow: 0 6px 12px rgba(212, 175, 55, 0.6); 
+      transform: translateY(-2px); 
     }
-    button#manualBtn::before {
-      content: "📖 ";
-      font-size: 18px;
+    button#backBtn, button#backBtn2 { 
+      background-color: #30CFCF; 
+      margin: 0; 
+      padding: 8px 16px; 
+      font-size: 14px; 
     }
-    button#backBtn { background-color: #30CFCF; margin: 0; padding: 8px 16px; font-size: 14px; }
-    textarea { height: 280px; margin-top: 10px; }
-    #photoInstructions { padding: 10px; border: 1px dashed #30CFCF; border-radius: 6px; background: #f8ffff; min-height: 80px; }
+    textarea { 
+      height: 280px; 
+      margin-top: 10px;
+      resize: vertical;
+      min-height: 100px;
+    }
+    #photoInstructions { 
+      padding: 10px; 
+      border: 1px dashed #30CFCF; 
+      border-radius: 6px; 
+      background: #f8ffff; 
+      min-height: 80px;
+      word-wrap: break-word;
+    }
     .invalid { background-color: #ffe0e0; }
     select option { background-color: #fff; color: #333; }
-    .button-group { display: flex; gap: 10px; }
+    .button-group { display: flex; gap: 10px; flex-wrap: wrap; }
     .hidden { display: none; }
     .manual-content { line-height: 1.8; }
     .manual-content p { margin: 10px 0; }
@@ -50,6 +108,15 @@
     .step-box { background-color: #f8ffff; border: 1px solid #30CFCF; border-radius: 6px; padding: 15px; margin: 15px 0; }
     .note-box { background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px; margin: 15px 0; }
     .example-box { background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 6px; padding: 12px; margin: 15px 0; }
+
+    /* スマホ対応の追加スタイル */
+    @media screen and (max-width: 768px) {
+      body { padding: 10px; }
+      .container { padding: 15px; }
+      button { padding: 12px; font-size: 14px; }
+      .button-group { flex-direction: column; }
+      .button-group button { width: 100%; margin-left: 0; }
+    }
   </style>
 </head>
 <body>
@@ -57,9 +124,9 @@
   <div class="container" id="mainScreen">
     <div class="title-container">
       <h1>買取テンプレート作成ツール</h1>
-    </div>
-    <div style="text-align: center; margin-bottom: 20px;">
-      <button id="manualBtn">使い方マニュアル</button>
+      <div class="manual-btn-wrapper">
+        <button id="manualBtn">📖 使い方マニュアル</button>
+      </div>
     </div>
 
     <label>【担当店舗・催事】 <span style="color:red">*</span></label>
@@ -89,9 +156,7 @@
 
     <label>【メモ欄(コピーした内容をペースト可能)】</label>
     <textarea id="memo" placeholder="ここにコピーした内容をペーストできます"></textarea>
-    <div class="button-group">
-      <button id="clearMemoBtn">メモのクリア</button>
-    </div>
+    <button id="clearMemoBtn">メモのクリア</button>
   </div>
 
   <!-- マニュアル画面 -->
@@ -110,8 +175,8 @@
       <div class="step-box">
         <h3>ステップ1: 必須項目を入力</h3>
         <ul>
-          <li><strong>【担当店舗・催事】</strong>: 担当している"店舗名"または"催事"を入力します（必須）</li>
-          <li><strong>【ジャンル】</strong>: プルダウンから該当するジャンルを選択します（必須）</li>
+          <li><strong>【担当店舗・催事】</strong>: 担当している"店舗名"または"催事"を入力します(必須)</li>
+          <li><strong>【ジャンル】</strong>: プルダウンから該当するジャンルを選択します(必須)</li>
         </ul>
         <div class="note-box">
           ⚠️ この2つの項目は必須です。未入力の場合、テンプレート生成時にアラートが表示されます。
@@ -122,8 +187,8 @@
         <h3>ステップ2: ジャンル別項目を入力</h3>
         <p>ジャンルを選択すると、そのジャンルに応じた入力項目が自動的に表示されます。</p>
         <ul>
-          <li><strong>【中分類】</strong>: ジャンルによってプルダウンが表示されます（任意）</li>
-          <li><strong>【ブランド名】</strong>: ブランド品の場合は入力します（任意）</li>
+          <li><strong>【中分類】</strong>: ジャンルによってプルダウンが表示されます(任意)</li>
+          <li><strong>【ブランド名】</strong>: ブランド品の場合は入力します(任意)</li>
           <li><strong>各種詳細項目</strong>: ジャンルごとに異なる項目が表示されます</li>
         </ul>
       </div>
@@ -168,18 +233,21 @@
       <p>「コピーする」ボタンをクリックすると、生成されたテンプレートがクリップボードにコピーされます。<br>ボタンが一時的に緑色に変わり「コピーしました!」と表示されます。</p>
 
       <h3>🗑️ テンプレートのクリア</h3>
-      <p>「テンプレートのクリア」ボタンをクリックすると、生成されたテンプレート（出力エリア）のみが即座にクリアされます。<br>入力した内容（店舗名、ジャンル、各項目）はそのまま残ります。</p>
+      <p>「テンプレートのクリア」ボタンをクリックすると、生成されたテンプレート(出力エリア)のみが即座にクリアされます。<br>入力した内容(店舗名、ジャンル、各項目)はそのまま残ります。</p>
+
+      <h3>🗑️ メモのクリア</h3>
+      <p>「メモのクリア」ボタンをクリックすると、メモ欄の内容のみが即座にクリアされます。</p>
 
       <h3>📝 メモ欄</h3>
-      <p>画面下部の【メモ欄】は、コピーした内容を一時的に保存したり、メモを取るために使用できます。<br>「メモのクリア」ボタンで即座にメモ欄の内容をクリアできます。</p>
+      <p>画面下部の【メモ欄】は、コピーした内容を一時的に保存したり、メモを取るために使用できます。</p>
 
       <h2>⚠️ 注意事項</h2>
 
       <div class="note-box">
         <ul>
           <li>プルダウンで「選択してください」のままの項目は、テンプレートに反映されません</li>
-          <li>空欄の項目も、テンプレートには含まれません（入力した項目のみ反映されます）</li>
-          <li>未選択のプルダウンは薄いピンク色で表示されます（視覚的な確認用）</li>
+          <li>空欄の項目も、テンプレートには含まれません(入力した項目のみ反映されます)</li>
+          <li>未選択のプルダウンは薄いピンク色で表示されます(視覚的な確認用)</li>
           <li>【担当店舗・催事】と【ジャンル】は必須項目です</li>
         </ul>
       </div>
@@ -192,8 +260,8 @@
           <li>ジャンルごとに撮影すべき箇所が異なります</li>
           <li>宝石は「白背景で撮影」など、特別な指示がある場合があります</li>
           <li>シリアル番号や刻印は、ピントを合わせてアップで撮影</li>
-          <li>ダメージ箇所は必ず撮影（査定の重要な判断材料になります）</li>
-          <li>付属品（箱、保証書、ギャランティカードなど）も忘れずに撮影</li>
+          <li>ダメージ箇所は必ず撮影(査定の重要な判断材料になります)</li>
+          <li>付属品(箱、保証書、ギャランティカードなど)も忘れずに撮影</li>
         </ul>
       </div>
 
@@ -204,7 +272,7 @@
         <ol>
           <li>【担当店舗・催事】に店舗名を入力</li>
           <li>【ジャンル】で「バッグ」を選択</li>
-          <li>【中分類】で「ハンド」を選択（任意）</li>
+          <li>【中分類】で「ハンド」を選択(任意)</li>
           <li>【ブランド名】に「ヴィトン」などを入力</li>
           <li>【型番／モデル名】【シリアル】【サイズ】などを入力</li>
           <li>【状態】でプルダウンから「AB品」などを選択し、備考欄に「角に擦れあり」などを入力</li>
@@ -218,7 +286,7 @@
         <ol>
           <li>【担当店舗・催事】に店舗名を入力</li>
           <li>【ジャンル】で「時計」を選択</li>
-          <li>【中分類】で「自動巻き」を選択（任意）</li>
+          <li>【中分類】で「自動巻き」を選択(任意)</li>
           <li>【ブランド名】に「ロレックス」などを入力</li>
           <li>【モデル名・型番】に「サブマリーナー 116610LN」などを入力</li>
           <li>【動作確認】で「動作」「不動」を選択</li>
@@ -254,6 +322,9 @@
 
         <p><strong>Q: 間違えて入力した内容をやり直したい</strong><br>
         A: 各入力欄を個別に修正するか、ブラウザをリロードして最初からやり直すことができます。</p>
+
+        <p><strong>Q: スマホでスクロールできない</strong><br>
+        A: 画面を再読み込みするか、ブラウザを変更してお試しください。</p>
       </div>
 
       <div style="text-align: center; margin-top: 30px;">
@@ -298,32 +369,45 @@ window.onload = function() {
 
   // 状態備考の例文マップ
   const conditionPlaceholders = {
-    "バッグ": "状態備考:例）全体に薄くカビあり。",
-    "財布": "状態備考:例）全体に薄くカビあり。",
-    "時計": "状態備考:例）文字盤変色している。",
-    "アパレル": "状態備考:例）襟に変色あり。",
-    "家電": "状態備考:例）側面にへこみあり。",
-    "スマホ": "状態備考:例）ガラス欠けあり。"
+    "バッグ": "状態備考:例)全体に薄くカビあり。",
+    "財布": "状態備考:例)全体に薄くカビあり。",
+    "時計": "状態備考:例)文字盤変色している。",
+    "アパレル": "状態備考:例)襟に変色あり。",
+    "家電": "状態備考:例)側面にへこみあり。",
+    "スマホ": "状態備考:例)ガラス欠けあり。"
   };
 
+  // iframe内の高さを親に通知する関数
+  function notifyHeightChange() {
+    if (window.parent !== window) {
+      const height = document.documentElement.scrollHeight;
+      window.parent.postMessage({ type: 'resize', height: height }, '*');
+    }
+  }
+
+  // MutationObserverでコンテンツの変更を監視
+  const observer = new MutationObserver(() => {
+    notifyHeightChange();
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true
+  });
+
   // 画面切り替え
-  manualBtn.addEventListener("click", () => {
-    mainScreen.classList.add("hidden");
-    manualScreen.classList.remove("hidden");
+  function switchScreen(hideScreen, showScreen) {
+    hideScreen.classList.add("hidden");
+    showScreen.classList.remove("hidden");
     window.scrollTo(0, 0);
-  });
+    // 少し遅延させてから高さを通知
+    setTimeout(notifyHeightChange, 100);
+  }
 
-  backBtn.addEventListener("click", () => {
-    manualScreen.classList.add("hidden");
-    mainScreen.classList.remove("hidden");
-    window.scrollTo(0, 0);
-  });
-
-  backBtn2.addEventListener("click", () => {
-    manualScreen.classList.add("hidden");
-    mainScreen.classList.remove("hidden");
-    window.scrollTo(0, 0);
-  });
+  manualBtn.addEventListener("click", () => switchScreen(mainScreen, manualScreen));
+  backBtn.addEventListener("click", () => switchScreen(manualScreen, mainScreen));
+  backBtn2.addEventListener("click", () => switchScreen(manualScreen, mainScreen));
 
   function markSelectValidity(sel) {
     if (!sel) return;
@@ -336,26 +420,28 @@ window.onload = function() {
     const photo = document.getElementById("photoInstructions");
     const red = txt => `<span style="color:red;font-weight:bold;">${txt}</span><br>`;
     const photoMap = {
-      "宝石": red("【白背景で撮影すること】") + `①全体写真（真上から）<br>②石部分アップ（光を当てて）<br>③刻印アップ（ピントを合わせて）<br>④石の色が分かる写真<br>⑤ダメージ箇所（あれば）<br>⑥付属品（鑑別書・ケースなど）`,
-      "貴金属・ブランドジュエリー": `①全体写真<br>②刻印アップ（ピントを合わせて）<br>③比重計計測写真（比重必要な製品）`,
-      "時計": `①本体正面（文字盤）<br>②裏蓋／刻印（シリアル）<br>③時計全体（ベルト含む）<br>④ブレス垂れ（ロレックスのみ）<br>⑤キズ・欠損（あれば）<br>⑥付属品（外箱／保証書／ギャラ）`,
-      "バッグ": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③ハンドルアップ<br>④ハンドルやショルダー付け根<br>⑤ダメージ箇所（あれば）<br>⑥付属品（箱／保証書／レシートなど）`,
-      "財布": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③コインケースの中／札入れの中（劣化注意）<br>④ダメージ箇所（角すれ注意）<br>⑤付属品（箱／保証書／レシートなど）`,
-      "スマホ": `①全体正面／背面<br>②ダメージ箇所（へこみ、ガラス割れ注意）<br>③付属品（箱／コード類／説明書など）`,
-      "家電": `①全体写真<br>②型番などが分かる写真<br>③付属品（コード類／説明書／箱など）<br>④ダメージ箇所（あれば）`,
-      "トレカ": `①正面写真<br>②背面写真<br>③角をアップで<br>④ダメージ箇所（あれば）<br>⑤鑑定ケース（あれば内容が分かるように）`,
-      "アパレル": `①全体正面／背面<br>②ランドリータグ（型番などが記載のもの）<br>③ブランドロゴタグ<br>④ダメージ箇所（襟、袖、裾は汚れやすいため注意）`,
-      "お酒": `①全体写真<br>②キャップ<br>③ラベル（表／裏）<br>④箱<br>⑤液体の容量（水面の高さがわかる写真）<br>⑥ダメージ／漏れの箇所（あれば）<br>${red("※匂いがする場合は漏れている")}`,
-      "記念硬貨": `①全体表面／裏面<br>②デザインアップ<br>③重量・比重を測った写真（必要であれば）`,
-      "古銭": `①全体表面／裏面<br>②デザインアップ<br>③重量・比重を測った写真（必要であれば）`,
-      "金券": `①表面<br>②裏面<br>③ダメージ箇所（あれば）`,
-      "楽器": `①全体がわかる写真数枚<br>②型番／製番の記載箇所<br>③ダメージ箇所（あれば）<br>④付属品（ケース／保証書など）`,
-      "骨董": `①全体写真<br>②箱（箱書きがあれば読めるように）<br>③本体の裏面（サインがあればピントを合わせてアップで）<br>④ダメージ箇所（あれば）<br>※必要に応じて、サイズがわかる写真（メジャーをあてた写真）`,
+      "宝石": red("【白背景で撮影すること】") + `①全体写真(真上から)<br>②石部分アップ(光を当てて)<br>③刻印アップ(ピントを合わせて)<br>④石の色が分かる写真<br>⑤ダメージ箇所(あれば)<br>⑥付属品(鑑別書・ケースなど)`,
+      "貴金属・ブランドジュエリー": `①全体写真<br>②刻印アップ(ピントを合わせて)<br>③比重計計測写真(比重必要な製品)`,
+      "時計": `①本体正面(文字盤)<br>②裏蓋／刻印(シリアル)<br>③時計全体(ベルト含む)<br>④ブレス垂れ(ロレックスのみ)<br>⑤キズ・欠損(あれば)<br>⑥付属品(外箱／保証書／ギャラ)`,
+      "バッグ": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③ハンドルアップ<br>④ハンドルやショルダー付け根<br>⑤ダメージ箇所(あれば)<br>⑥付属品(箱／保証書／レシートなど)`,
+      "財布": `①全体正面／背面<br>②ロゴ刻印／ブランド刻印<br>③コインケースの中／札入れの中(劣化注意)<br>④ダメージ箇所(角すれ注意)<br>⑤付属品(箱／保証書／レシートなど)`,
+      "スマホ": `①全体正面／背面<br>②ダメージ箇所(へこみ、ガラス割れ注意)<br>③付属品(箱／コード類／説明書など)`,
+      "家電": `①全体写真<br>②型番などが分かる写真<br>③付属品(コード類／説明書／箱など)<br>④ダメージ箇所(あれば)`,
+      "トレカ": `①正面写真<br>②背面写真<br>③角をアップで<br>④ダメージ箇所(あれば)<br>⑤鑑定ケース(あれば内容が分かるように)`,
+      "アパレル": `①全体正面／背面<br>②ランドリータグ(型番などが記載のもの)<br>③ブランドロゴタグ<br>④ダメージ箇所(襟、袖、裾は汚れやすいため注意)`,
+      "お酒": `①全体写真<br>②キャップ<br>③ラベル(表／裏)<br>④箱<br>⑤液体の容量(水面の高さがわかる写真)<br>⑥ダメージ／漏れの箇所(あれば)<br>${red("※匂いがする場合は漏れている")}`,
+      "記念硬貨": `①全体表面／裏面<br>②デザインアップ<br>③重量・比重を測った写真(必要であれば)`,
+      "古銭": `①全体表面／裏面<br>②デザインアップ<br>③重量・比重を測った写真(必要であれば)`,
+      "金券": `①表面<br>②裏面<br>③ダメージ箇所(あれば)`,
+      "楽器": `①全体がわかる写真数枚<br>②型番／製番の記載箇所<br>③ダメージ箇所(あれば)<br>④付属品(ケース／保証書など)`,
+      "骨董": `①全体写真<br>②箱(箱書きがあれば読めるように)<br>③本体の裏面(サインがあればピントを合わせてアップで)<br>④ダメージ箇所(あれば)<br>※必要に応じて、サイズがわかる写真(メジャーをあてた写真)`,
       "日本刀": `登録証との相違が分かるよう、全体・銘・状態・登録証の写真を推奨`,
-      "道具類": `型番などがわかる部分（ラベルなど）があれば撮影推奨`,
-      "その他": `①全体写真<br>②特徴が分かるアップ写真<br>③ダメージ箇所（あれば）<br>④付属品（あれば）`
+      "道具類": `型番などがわかる部分(ラベルなど)があれば撮影推奨`,
+      "その他": `①全体写真<br>②特徴が分かるアップ写真<br>③ダメージ箇所(あれば)<br>④付属品(あれば)`
     };
     photo.innerHTML = photoMap[genre] || "";
+    // 写真指示が更新されたら高さを通知
+    setTimeout(notifyHeightChange, 50);
   }
 
   // ジャンル初期化
@@ -409,7 +495,7 @@ window.onload = function() {
     container.innerHTML = "";
 
     const templates = {
-      "宝石": [["【アイテム種別】","itemType"],["【メイン石の種類】","mainStone"],["【メイン石の重量（ct）】","mainStoneWeight"],["【素材】","material"],["【刻印内容】","engraving"],["【メイン石詳細】","stoneDetail"],["【総重量】","weight"],["【付属品】","accessories"]],
+      "宝石": [["【アイテム種別】","itemType"],["【メイン石の種類】","mainStone"],["【メイン石の重量(ct)】","mainStoneWeight"],["【素材】","material"],["【刻印内容】","engraving"],["【メイン石詳細】","stoneDetail"],["【総重量】","weight"],["【付属品】","accessories"]],
       "貴金属・ブランドジュエリー": [["【型番・モデル名】","model"],["【素材】","material"],["【重量】","weight"],["【刻印】","engraving"]],
       "時計": [["【モデル名・型番】","model"],["【動作確認】","operation"],["【ケースサイズ】","caseSize"],["【状態】","condition"],["【付属品】","accessories"]],
       "バッグ": [["【型番／モデル名】","model"],["【シリアル】","serial"],["【サイズ】","size"],["【状態】","condition"],["【付属品】","accessories"]],
@@ -417,7 +503,7 @@ window.onload = function() {
       "スマホ": [["【機種名／型番】","model"],["【容量】","capacity"],["【キャリア】","carrier"],["【ネットワーク利用制限】","network"],["【バッテリー最大容量】","battery"],["【状態】","condition"],["【付属品】","accessories"]],
       "家電": [["【型番】","model"],["【年式】","year"],["【動作確認】","operation"],["【状態】","condition"],["【付属品】","accessories"]],
       "トレカ": [["【カード名】","cardName"],["【レアリティ】","rarity"],["【状態】","condition"],["【鑑定情報】","grading"]],
-      "アパレル": [["【型番など（わかれば）】","itemType"],["【サイズ】","size"],["【状態】","condition"],["【付属品】","accessories"]],
+      "アパレル": [["【型番など(わかれば)】","itemType"],["【サイズ】","size"],["【状態】","condition"],["【付属品】","accessories"]],
       "お酒": [["【銘柄】","brandField"],["【容量】","volume"],["【度数】","alcohol"],["【状態】","condition"],["【付属品】","accessories"]],
       "記念硬貨": [["【種類】","type"],["【材質】","material"],["【重量】","weight"],["【比重値】","specificGravity"],["【状態】","condition"]],
       "古銭": [["【種類】","type"],["【材質】","material"],["【重量】","weight"],["【比重値】","specificGravity"],["【状態】","condition"]],
@@ -431,17 +517,17 @@ window.onload = function() {
     const commonFields = [["【備考】","notes"],["【お客様希望額】","wish"],["【見立て金額】","estimate"]];
     const fields = (templates[genre] || []).concat(commonFields);
 
-    // プルダウン＋自由入力が必要なジャンル（トレカを除外）
+    // プルダウン＋自由入力が必要なジャンル(トレカを除外)
     const genresWithConditionDropdown = ["バッグ", "財布", "時計", "アパレル", "家電", "スマホ"];
 
     fields.forEach(([label, id]) => {
       let html = `<label>${label}</label>`;
       
-      // 状態欄：指定されたジャンルはプルダウン＋備考欄
+      // 状態欄:指定されたジャンルはプルダウン＋備考欄
       if (genresWithConditionDropdown.includes(genre) && id === "condition") {
         const placeholder = conditionPlaceholders[genre] || "状態備考を入力";
-        html += `<div style="display:flex; gap:8px; align-items:center;">
-          <select id="${id}" class="invalid">
+        html += `<div style="display:flex; gap:8px; align-items:center; flex-wrap: wrap;">
+          <select id="${id}" class="invalid" style="flex: 1; min-width: 150px;">
             <option value="">選択してください</option>
             <option value="未使用品">未使用品</option>
             <option value="A品">A品</option>
@@ -451,7 +537,7 @@ window.onload = function() {
             <option value="C品">C品</option>
             <option value="D品">D品</option>
           </select>
-          <input type="text" id="${id}Notes" placeholder="${placeholder}">
+          <input type="text" id="${id}Notes" placeholder="${placeholder}" style="flex: 2; min-width: 200px;">
         </div>`;
       } else if (genre === "時計" && id === "operation") {
         html += `<select id="${id}" class="invalid">
@@ -496,9 +582,12 @@ window.onload = function() {
       markSelectValidity(sel);
       sel.addEventListener('change', () => markSelectValidity(sel));
     });
+
+    // 動的フィールド生成後に高さを通知
+    setTimeout(notifyHeightChange, 50);
   }
 
-  // テンプレート生成（状態欄：プルダウン＋備考を1行にまとめる）
+  // テンプレート生成(状態欄:プルダウン＋備考を1行にまとめる)
   function generateTemplate() {
     const store = document.getElementById("store").value;
     const genre = document.getElementById("genre").value;
@@ -521,7 +610,7 @@ window.onload = function() {
       const label = field.previousElementSibling?.textContent || "";
       const value = field.value || "";
 
-      // 状態欄：指定されたジャンルはプルダウン＋備考を1行にまとめる
+      // 状態欄:指定されたジャンルはプルダウン＋備考を1行にまとめる
       if (genresWithConditionDropdown.includes(genre) && field.id === "condition") {
         const notes = document.getElementById("conditionNotes")?.value || "";
         const combined = notes ? `${value}　${notes}` : value;
@@ -537,7 +626,7 @@ window.onload = function() {
         return;
       }
 
-      // 通常の項目（空文字と「選択してください」は除外）
+      // 通常の項目(空文字と「選択してください」は除外)
       if (value && value !== "選択してください") {
         template += `${label}\n${value}\n`;
       }
@@ -546,12 +635,12 @@ window.onload = function() {
     document.getElementById("output").value = template.trim();
   }
 
-  // テンプレートのクリア処理（アラートなし、即座にクリア）
+  // テンプレートのクリア処理(アラートなし、即座にクリア)
   function clearTemplate() {
     document.getElementById("output").value = "";
   }
 
-  // メモのクリア処理（アラートなし、即座にクリア）
+  // メモのクリア処理
   function clearMemo() {
     document.getElementById("memo").value = "";
   }
@@ -579,6 +668,9 @@ window.onload = function() {
   // 初期呼び出し
   updateDynamicFields();
   updatePhotoInstructions();
+  
+  // 初期高さを通知
+  setTimeout(notifyHeightChange, 300);
 };
   </script>
 </body>
