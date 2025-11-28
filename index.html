@@ -5,27 +5,21 @@
   <title>買取テンプレート作成ツール</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * { 
-      box-sizing: border-box; 
-      -webkit-overflow-scrolling: touch; 
-    }
-    html { 
+    * { box-sizing: border-box; -webkit-overflow-scrolling: touch; }
+    html, body { 
       margin: 0; 
       padding: 0; 
-      width: 100%;
-      height: auto !important;
-      overflow: visible;
+      width: 100%; 
+      height: auto;
+      overflow-x: hidden;
+      overflow-y: visible;
     }
     body { 
       background-color: #f0fdfd; 
       font-family: sans-serif; 
       color: #333; 
-      margin: 0;
       padding: 20px; 
-      width: 100%;
-      height: auto !important;
-      overflow: visible;
-      min-height: 0;
+      min-height: 100vh;
     }
     .container { 
       max-width: 720px; 
@@ -36,7 +30,6 @@
       background-color: #fff;
       position: relative;
       overflow: visible;
-      height: auto;
     }
     h1 { color: #30CFCF; text-align: center; margin: 0 0 10px; }
     h2 { color: #30CFCF; border-bottom: 2px solid #30CFCF; padding-bottom: 8px; margin-top: 25px; }
@@ -119,7 +112,6 @@
     .note-box { background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px; margin: 15px 0; }
     .example-box { background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 6px; padding: 12px; margin: 15px 0; }
 
-    /* スマホ対応の追加スタイル */
     @media screen and (max-width: 768px) {
       body { padding: 10px; }
       .container { padding: 15px; }
@@ -377,7 +369,6 @@ window.onload = function() {
     "その他": []
   };
 
-  // 状態備考の例文マップ
   const conditionPlaceholders = {
     "バッグ": "状態備考:例)全体に薄くカビあり。",
     "財布": "状態備考:例)全体に薄くカビあり。",
@@ -387,40 +378,58 @@ window.onload = function() {
     "スマホ": "状態備考:例)ガラス欠けあり。"
   };
 
-  // iframe内の高さを親に通知する関数（超強化版）
-  function notifyHeightChange() {
+  // 🔥 超強化版: 高さ通知関数（STUDIO無料版対応）
+  function forceNotifyHeight() {
     if (window.parent !== window) {
-      // 高さ計算を複数の方法で実施
-      const bodyHeight = document.body.scrollHeight;
-      const htmlHeight = document.documentElement.scrollHeight;
-      const bodyOffset = document.body.offsetHeight;
-      const visibleContainer = document.querySelector('.container:not(.hidden)');
-      const containerHeight = visibleContainer ? visibleContainer.scrollHeight : 0;
-      
-      // すべての計算値から最大値を取得
-      const height = Math.max(bodyHeight, htmlHeight, bodyOffset, containerHeight) + 100; // 余白を追加
-      
-      window.parent.postMessage({ type: 'resize', height: height }, '*');
-      console.log('📏 Height sent:', height, {bodyHeight, htmlHeight, bodyOffset, containerHeight});
+      try {
+        const visibleContainer = document.querySelector('.container:not(.hidden)');
+        const containerRect = visibleContainer ? visibleContainer.getBoundingClientRect() : null;
+        
+        const heights = [
+          document.body.scrollHeight,
+          document.documentElement.scrollHeight,
+          document.body.offsetHeight,
+          document.documentElement.offsetHeight,
+          document.body.clientHeight,
+          document.documentElement.clientHeight
+        ];
+        
+        if (containerRect) {
+          heights.push(containerRect.height + containerRect.top + 100);
+        }
+        
+        if (visibleContainer) {
+          heights.push(visibleContainer.scrollHeight + 100);
+          heights.push(visibleContainer.offsetHeight + 100);
+        }
+        
+        const height = Math.max(...heights) + 200; // さらに余白を追加
+        
+        window.parent.postMessage({ 
+          type: 'resize', 
+          height: height 
+        }, '*');
+        
+        console.log('📏 Height:', height, 'from:', heights);
+      } catch (e) {
+        console.error('Height calc error:', e);
+      }
     }
   }
 
-  // より頻繁に高さを通知
-  function notifyHeightChangeMultiple() {
-    notifyHeightChange();
-    setTimeout(notifyHeightChange, 100);
-    setTimeout(notifyHeightChange, 300);
-    setTimeout(notifyHeightChange, 600);
-    setTimeout(notifyHeightChange, 1000);
-    setTimeout(notifyHeightChange, 1500);
-    setTimeout(notifyHeightChange, 2000);
-  }
+  // 🔥 定期的な高さ通知（100msごと - 超積極的）
+  setInterval(forceNotifyHeight, 100);
 
-  // MutationObserverでコンテンツの変更を監視
-  const observer = new MutationObserver(() => {
-    notifyHeightChange();
-  });
+  // 🔥 タッチイベントで即座に通知
+  document.addEventListener('touchstart', forceNotifyHeight, { passive: true });
+  document.addEventListener('touchmove', forceNotifyHeight, { passive: true });
+  document.addEventListener('touchend', forceNotifyHeight, { passive: true });
 
+  // 🔥 スクロールイベントでも通知
+  window.addEventListener('scroll', forceNotifyHeight, { passive: true });
+
+  // MutationObserver
+  const observer = new MutationObserver(forceNotifyHeight);
   observer.observe(document.body, {
     childList: true,
     subtree: true,
@@ -430,31 +439,33 @@ window.onload = function() {
 
   // 画面切り替え（超強化版）
   function switchScreen(hideScreen, showScreen) {
+    console.log('🔄 Switching screen');
     hideScreen.classList.add("hidden");
     showScreen.classList.remove("hidden");
-    
-    // スクロール位置をトップに
     window.scrollTo(0, 0);
-    if (window.parent !== window) {
-      window.parent.postMessage({ type: 'scrollTop' }, '*');
+    
+    // 画面切り替え後、50回連続で高さを通知
+    for (let i = 0; i < 50; i++) {
+      setTimeout(forceNotifyHeight, i * 50);
     }
     
-    // 画面切り替え後に積極的に高さを通知
-    notifyHeightChangeMultiple();
+    // さらに遅延して追加通知
+    setTimeout(forceNotifyHeight, 3000);
+    setTimeout(forceNotifyHeight, 5000);
   }
 
   manualBtn.addEventListener("click", () => {
-    console.log('📖 Manual button clicked');
+    console.log('📖 Manual clicked');
     switchScreen(mainScreen, manualScreen);
   });
   
   backBtn.addEventListener("click", () => {
-    console.log('🔙 Back button clicked');
+    console.log('🔙 Back clicked');
     switchScreen(manualScreen, mainScreen);
   });
   
   backBtn2.addEventListener("click", () => {
-    console.log('🔙 Back button 2 clicked');
+    console.log('🔙 Back2 clicked');
     switchScreen(manualScreen, mainScreen);
   });
 
@@ -463,7 +474,6 @@ window.onload = function() {
     sel.classList.toggle('invalid', sel.value === "");
   }
 
-  // 写真撮影指示
   function updatePhotoInstructions() {
     const genre = document.getElementById("genre").value;
     const photo = document.getElementById("photoInstructions");
@@ -489,10 +499,9 @@ window.onload = function() {
       "その他": `①全体写真<br>②特徴が分かるアップ写真<br>③ダメージ箇所(あれば)<br>④付属品(あれば)`
     };
     photo.innerHTML = photoMap[genre] || "";
-    setTimeout(notifyHeightChange, 50);
+    setTimeout(forceNotifyHeight, 50);
   }
 
-  // ジャンル初期化
   genreSelect.innerHTML = '<option value="">選択してください</option>';
   genres.forEach(g => {
     const opt = document.createElement("option");
@@ -502,7 +511,6 @@ window.onload = function() {
   });
   markSelectValidity(genreSelect);
 
-  // ジャンル変更時の処理
   genreSelect.addEventListener("change", () => {
     const genre = genreSelect.value;
     subSelect.innerHTML = '<option value="">選択してください</option>';
@@ -536,7 +544,6 @@ window.onload = function() {
 
   subSelect.addEventListener("change", () => markSelectValidity(subSelect));
 
-  // 動的フィールド生成
   function updateDynamicFields() {
     const genre = document.getElementById("genre").value;
     const container = document.getElementById("dynamicFields");
@@ -564,7 +571,6 @@ window.onload = function() {
 
     const commonFields = [["【備考】","notes"],["【お客様希望額】","wish"],["【見立て金額】","estimate"]];
     const fields = (templates[genre] || []).concat(commonFields);
-
     const genresWithConditionDropdown = ["バッグ", "財布", "時計", "アパレル", "家電", "スマホ"];
 
     fields.forEach(([label, id]) => {
@@ -628,7 +634,7 @@ window.onload = function() {
       sel.addEventListener('change', () => markSelectValidity(sel));
     });
 
-    setTimeout(notifyHeightChange, 50);
+    setTimeout(forceNotifyHeight, 50);
   }
 
   function generateTemplate() {
@@ -702,14 +708,15 @@ window.onload = function() {
     }, 1500);
   });
 
-  // 初期呼び出し
   updateDynamicFields();
   updatePhotoInstructions();
   
-  // 初期高さを通知
-  notifyHeightChangeMultiple();
+  // 初期高さ通知
+  for (let i = 0; i < 20; i++) {
+    setTimeout(forceNotifyHeight, i * 100);
+  }
   
-  // マニュアル画面のスクロール対策
+  // マニュアル画面の監視
   const manualContent = document.querySelector('.manual-content');
   if (manualContent) {
     observer.observe(manualContent, {
@@ -719,22 +726,14 @@ window.onload = function() {
     });
   }
 
-  // 親ウィンドウからのメッセージを受信
+  // 親からのメッセージ受信
   window.addEventListener('message', function(e) {
     if (e.data && e.data.type === 'getHeight') {
-      notifyHeightChange();
+      forceNotifyHeight();
     }
   });
   
-  // 定期的な高さチェック（最初の10秒間）
-  let checkCounter = 0;
-  const heightInterval = setInterval(() => {
-    notifyHeightChange();
-    checkCounter++;
-    if (checkCounter > 20) {
-      clearInterval(heightInterval);
-    }
-  }, 500);
+  console.log('✅ Tool initialized with ultra-aggressive height notification');
 };
   </script>
 </body>
