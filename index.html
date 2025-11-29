@@ -187,6 +187,10 @@
       line-height: 1.8;
       margin-bottom: 15px;
       transition: min-height 0.3s ease;
+      user-select: text;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
     }
 
     #copyBtn {
@@ -292,6 +296,15 @@
       background: linear-gradient(135deg, #90a4ae 0%, var(--gray) 100%);
     }
 
+    /* コピーヒント表示 */
+    .copy-hint {
+      font-size: 12px;
+      color: var(--primary);
+      text-align: center;
+      margin-top: 5px;
+      font-weight: normal;
+    }
+
     @media screen and (max-width: 768px) {
       .container { padding: 20px; min-height: auto; }
       h1 { font-size: 22px; }
@@ -350,7 +363,8 @@
 
     <button onclick="generateTemplate()">テンプレートを生成</button>
     <div id="outputArea"></div>
-    <button id="copyBtn" onclick="copyToClipboard()">コピーする</button>
+    <button id="copyBtn" onclick="copyToClipboard('outputArea', 'copyBtn')">コピーする</button>
+    <p class="copy-hint">※コピーできない場合は、テキストを選択してCtrl+C(⌘+C)でコピーしてください</p>
 
     <div class="clear-buttons">
       <button class="clear-btn" onclick="clearTemplate()">テンプレートのクリア</button>
@@ -442,7 +456,8 @@
     
     <p class="annotation">※担当・店舗にメンション</p>
     
-    <button id="telCopyBtn" onclick="copyTelephoneToClipboard()">コピーする</button>
+    <button id="telCopyBtn" onclick="copyToClipboard('telOutputArea', 'telCopyBtn')">コピーする</button>
+    <p class="copy-hint">※コピーできない場合は、テキストを選択してCtrl+C(⌘+C)でコピーしてください</p>
 
     <div class="clear-buttons">
       <button class="clear-btn" onclick="clearTelephoneTemplate()">テンプレートのクリア</button>
@@ -815,6 +830,89 @@
     forceNotifyHeight();
   };
 
+  // 改善されたコピー機能（iframe対応）
+  const copyToClipboard = (outputId, btnId) => {
+    const outputArea = document.getElementById(outputId);
+    const text = outputArea.textContent;
+    
+    if (!text) {
+      alert('テンプレートが生成されていません。');
+      return;
+    }
+
+    // 方法1: 最新のClipboard API（iframe内で失敗する可能性あり）
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => showCopySuccess(btnId))
+        .catch(() => fallbackCopy(outputArea, btnId));
+    } else {
+      // 方法2: 古い方式（iframe内でも動く）
+      fallbackCopy(outputArea, btnId);
+    }
+  };
+
+  // フォールバック: document.execCommandを使用
+  const fallbackCopy = (outputArea, btnId) => {
+    try {
+      // テキストエリアを一時作成
+      const textarea = document.createElement('textarea');
+      textarea.value = outputArea.textContent;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      
+      // 選択してコピー
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+      
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      
+      if (successful) {
+        showCopySuccess(btnId);
+      } else {
+        // 最終手段: テキストを選択状態にする
+        selectText(outputArea);
+        alert('自動コピーできませんでした。\nテキストを選択した状態にしましたので、\nCtrl+C (Mac: ⌘+C) でコピーしてください。');
+      }
+    } catch (err) {
+      selectText(outputArea);
+      alert('自動コピーできませんでした。\nテキストを選択した状態にしましたので、\nCtrl+C (Mac: ⌘+C) でコピーしてください。');
+    }
+  };
+
+  // テキストを選択状態にする
+  const selectText = (element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  };
+
+  // コピー成功時の表示
+  const showCopySuccess = (btnId) => {
+    const btn = document.getElementById(btnId);
+    const originalText = btn.textContent;
+    const originalBg = btn.style.background;
+    
+    btn.textContent = 'コピーしました!';
+    if (btnId === 'copyBtn') {
+      btn.classList.add('copied');
+    } else {
+      btn.style.background = 'linear-gradient(135deg, #66bb6a 0%, #43a047 100%)';
+    }
+    
+    setTimeout(() => {
+      btn.textContent = originalText;
+      if (btnId === 'copyBtn') {
+        btn.classList.remove('copied');
+      } else {
+        btn.style.background = originalBg || 'linear-gradient(135deg, #26a69a 0%, #00796b 100%)';
+      }
+    }, 2000);
+  };
+
   // 動的フィールド生成
   const genreSelect = document.getElementById('genre');
   genreSelect.addEventListener('change', function() {
@@ -947,21 +1045,6 @@
     forceNotifyHeight();
   };
 
-  const copyToClipboard = () => {
-    const text = document.getElementById('outputArea').textContent;
-    if (!text) return alert('テンプレートが生成されていません。');
-
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById('copyBtn');
-      btn.textContent = 'コピーしました!';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = 'コピーする';
-        btn.classList.remove('copied');
-      }, 2000);
-    }).catch(err => alert('コピーに失敗しました: ' + err));
-  };
-
   const clearTemplate = () => {
     const outputArea = document.getElementById('outputArea');
     outputArea.textContent = '';
@@ -1015,21 +1098,6 @@
     telOutputArea.textContent = template;
     telOutputArea.style.minHeight = Math.max(40, telOutputArea.scrollHeight) + 'px';
     forceNotifyHeight();
-  };
-
-  const copyTelephoneToClipboard = () => {
-    const text = document.getElementById('telOutputArea').textContent;
-    if (!text) return alert('テンプレートが生成されていません。');
-
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById('telCopyBtn');
-      btn.textContent = 'コピーしました!';
-      btn.style.background = 'linear-gradient(135deg, #66bb6a 0%, #43a047 100%)';
-      setTimeout(() => {
-        btn.textContent = 'コピーする';
-        btn.style.background = 'linear-gradient(135deg, #26a69a 0%, #00796b 100%)';
-      }, 2000);
-    }).catch(err => alert('コピーに失敗しました: ' + err));
   };
 
   const clearTelephoneTemplate = () => {
