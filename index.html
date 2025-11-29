@@ -154,6 +154,11 @@
       min-height: 220px;
     }
 
+    /* 受電対応テンプレートのメモ欄を50%サイズに */
+    #telMemo {
+      min-height: 110px;
+    }
+
     /* 写真撮影指示欄を動的サイズに */
     textarea.photo-instructions {
       min-height: 40px;
@@ -263,7 +268,8 @@
       background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
     }
 
-    #memoArea {
+    #memoArea,
+    #telMemoArea {
       margin-top: 30px;
       padding-top: 30px;
       border-top: 2px solid #b2dfdb;
@@ -417,7 +423,7 @@
 
     <div class="form-group">
       <label for="storeName">【担当店舗・催事】<span class="required">※必須</span></label>
-      <input type="text" id="storeName" placeholder="”店舗名”または”催事”を入力">
+      <input type="text" id="storeName" placeholder=""店舗名"または"催事"を入力">
     </div>
 
     <div class="form-group">
@@ -547,6 +553,17 @@
 
     <div class="clear-buttons">
       <button class="clear-btn" onclick="clearTelephoneTemplate()">テンプレートのクリア</button>
+    </div>
+
+    <!-- 受電対応テンプレートのメモ欄 -->
+    <div id="telMemoArea">
+      <div class="form-group">
+        <label for="telMemo">【メモ欄】</label>
+        <textarea id="telMemo" placeholder="ここにコピーした内容をペーストできます"></textarea>
+      </div>
+      <div class="clear-buttons">
+        <button class="clear-btn" onclick="clearTelMemo()">メモのクリア</button>
+      </div>
     </div>
   </div>
 
@@ -1061,7 +1078,7 @@
     }
   });
 
-  // テンプレート生成
+  // テンプレート生成（改行形式に変更）
   function generateTemplate() {
     const storeName = document.getElementById('storeName').value.trim();
     const genre = genreSelect.value;
@@ -1075,7 +1092,7 @@
       return;
     }
 
-    let template = `【担当店舗・催事】${storeName}\n【ジャンル】${genre}\n`;
+    let template = `【担当店舗・催事】\n${storeName}\n【ジャンル】\n${genre}\n`;
 
     const data = genreData[genre];
     if (data) {
@@ -1084,7 +1101,7 @@
           const selectElement = document.getElementById(field.id);
           const value = selectElement ? selectElement.value : '';
           if (value && value !== '' && value !== '選択してください') {
-            template += `${field.label}${value}\n`;
+            template += `${field.label}\n${value}\n`;
           }
 
         } else if (field.type === 'select+text') {
@@ -1098,16 +1115,16 @@
             if (inputValue) {
               combined += `（${inputValue}）`;
             }
-            template += `${field.label}${combined}\n`;
+            template += `${field.label}\n${combined}\n`;
           } else if (inputValue) {
-            template += `${field.label}${inputValue}\n`;
+            template += `${field.label}\n${inputValue}\n`;
           }
 
         } else {
           const inputElement = document.getElementById(field.id);
           const value = inputElement ? inputElement.value.trim() : '';
           if (value) {
-            template += `${field.label}${value}\n`;
+            template += `${field.label}\n${value}\n`;
           }
         }
       });
@@ -1156,7 +1173,11 @@
     document.getElementById('memo').value = '';
   }
 
-  // 受電対応テンプレート生成
+  function clearTelMemo() {
+    document.getElementById('telMemo').value = '';
+  }
+
+  // 受電対応テンプレート生成（改行形式に変更）
   function generateTelephoneTemplate() {
     const storeName = document.getElementById('telStoreName').value.trim();
 
@@ -1165,7 +1186,7 @@
       return;
     }
 
-    let template = `【店舗/会場名】${storeName}\n`;
+    let template = `【店舗/会場名】\n${storeName}\n`;
 
     const fields = [
       { label: '【依頼】', id: 'telRequest' },
@@ -1180,7 +1201,7 @@
       const element = document.getElementById(field.id);
       const value = element ? element.value.trim() : '';
       if (value) {
-        template += `${field.label}${value}\n`;
+        template += `${field.label}\n${value}\n`;
       }
     });
 
@@ -1194,9 +1215,9 @@
       if (textValue) {
         combined += `（${textValue}）`;
       }
-      template += `【お客様情報】${combined}\n`;
+      template += `【お客様情報】\n${combined}\n`;
     } else if (textValue) {
-      template += `【お客様情報】${textValue}\n`;
+      template += `【お客様情報】\n${textValue}\n`;
     }
 
     // 駐車場（プルダウン + 手入力）
@@ -1209,9 +1230,9 @@
       if (parkingTextValue) {
         combined += `（${parkingTextValue}）`;
       }
-      template += `【駐車場】（※出張の場合）${combined}\n`;
+      template += `【駐車場】（※出張の場合）\n${combined}\n`;
     } else if (parkingTextValue) {
-      template += `【駐車場】（※出張の場合）${parkingTextValue}\n`;
+      template += `【駐車場】（※出張の場合）\n${parkingTextValue}\n`;
     }
 
     const telOutputArea = document.getElementById('telOutputArea');
