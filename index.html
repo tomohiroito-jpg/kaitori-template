@@ -187,10 +187,6 @@
       line-height: 1.8;
       margin-bottom: 15px;
       transition: min-height 0.3s ease;
-      user-select: text;
-      -webkit-user-select: text;
-      -moz-user-select: text;
-      -ms-user-select: text;
     }
 
     #copyBtn {
@@ -296,15 +292,6 @@
       background: linear-gradient(135deg, #90a4ae 0%, var(--gray) 100%);
     }
 
-    /* コピーヒント表示 */
-    .copy-hint {
-      font-size: 12px;
-      color: var(--primary);
-      text-align: center;
-      margin-top: 5px;
-      font-weight: normal;
-    }
-
     @media screen and (max-width: 768px) {
       .container { padding: 20px; min-height: auto; }
       h1 { font-size: 22px; }
@@ -331,7 +318,7 @@
 
     <div class="form-group">
       <label for="storeName">【担当店舗・催事】<span class="required">※必須</span></label>
-      <input type="text" id="storeName" placeholder="”店舗名”または”催事”を入力">
+      <input type="text" id="storeName" placeholder="'店舗名'または'催事'を入力">
     </div>
 
     <div class="form-group">
@@ -363,8 +350,7 @@
 
     <button onclick="generateTemplate()">テンプレートを生成</button>
     <div id="outputArea"></div>
-    <button id="copyBtn" onclick="copyToClipboard('outputArea', 'copyBtn')">コピーする</button>
-    <p class="copy-hint">※コピーできない場合は、テキストを選択してCtrl+C(⌘+C)でコピーしてください</p>
+    <button id="copyBtn" onclick="copyToClipboard()">コピーする</button>
 
     <div class="clear-buttons">
       <button class="clear-btn" onclick="clearTemplate()">テンプレートのクリア</button>
@@ -456,8 +442,7 @@
     
     <p class="annotation">※担当・店舗にメンション</p>
     
-    <button id="telCopyBtn" onclick="copyToClipboard('telOutputArea', 'telCopyBtn')">コピーする</button>
-    <p class="copy-hint">※コピーできない場合は、テキストを選択してCtrl+C(⌘+C)でコピーしてください</p>
+    <button id="telCopyBtn" onclick="copyTelephoneToClipboard()">コピーする</button>
 
     <div class="clear-buttons">
       <button class="clear-btn" onclick="clearTelephoneTemplate()">テンプレートのクリア</button>
@@ -716,10 +701,11 @@
     },
     "日本刀": {
       fields: [
-        { label: "【中分類】", id: "subcategory", type: "select", options: ["短刀", "脇差", "刀", "槍", "薙刀", "その他"] },
+        { label: "【中分類】", id: "subcategory", type: "select", options: ["短刀（～１尺（～30.3cm）未満）", "脇差（～２尺（～60.6cm）未満）", "刀（～２尺（60.6cm）以上）", "槍", "薙刀", "その他"] },
         { label: "【銘】", id: "inscription", type: "text", placeholder: "例: 〇〇（刀工名）、無銘" },
         { label: "【刃長】", id: "bladeLength", type: "text", placeholder: "例: 70.5cm" },
-        { label: "【反り】", id: "curvature", type: "text", placeholder: "例: 1.2cm" },
+        { label: "【目釘穴数】", id: "mekugiHoles", type: "text", placeholder: "例: ２個" },
+        { label: "【身幅】※元幅（刀身の根本あたり）", id: "bodyWidth", type: "text", placeholder: "例: 2.8cm", templateLabel: "【身幅】※元幅" },
         { label: "【白鞘or拵】", id: "mounting", type: "select", options: ["白鞘", "拵", "白鞘と拵どちらも付属"] },
         { label: "【状態】", id: "condition", type: "text", placeholder: "例: 錆あり、刃こぼれあり、良好" },
         { label: "【付属品】", id: "accessories", type: "text", placeholder: "例: 鑑定書" },
@@ -727,7 +713,8 @@
         commonFields.estimatedPrice,
         commonFields.remarks
       ],
-      photoInstructions: "・刀身全体の写真\n・切っ先（刀の先端部分）\n・刃文がわかる写真・白鞘または拵の写真\n・錆や刃こぼれがある箇所\n・登録証\n・付属品"
+      photoInstructions: "※刃長はメジャーをあてた写真\n※茎（なかご）（柄を外したところ）の写真\n・刀身全体の写真\n・切っ先（刀の先端部分）\n・刃文がわかる写真・白鞘または拵の写真\n・錆や刃こぼれがある箇所\n・登録証\n・付属品",
+      redEmphasis: "※種類や刃長、銘が登録証と違う場合買取不可の可能性大"
     },
     "記念硬貨": {
       fields: [
@@ -830,89 +817,6 @@
     forceNotifyHeight();
   };
 
-  // 改善されたコピー機能（iframe対応）
-  const copyToClipboard = (outputId, btnId) => {
-    const outputArea = document.getElementById(outputId);
-    const text = outputArea.textContent;
-    
-    if (!text) {
-      alert('テンプレートが生成されていません。');
-      return;
-    }
-
-    // 方法1: 最新のClipboard API（iframe内で失敗する可能性あり）
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text)
-        .then(() => showCopySuccess(btnId))
-        .catch(() => fallbackCopy(outputArea, btnId));
-    } else {
-      // 方法2: 古い方式（iframe内でも動く）
-      fallbackCopy(outputArea, btnId);
-    }
-  };
-
-  // フォールバック: document.execCommandを使用
-  const fallbackCopy = (outputArea, btnId) => {
-    try {
-      // テキストエリアを一時作成
-      const textarea = document.createElement('textarea');
-      textarea.value = outputArea.textContent;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      
-      // 選択してコピー
-      textarea.select();
-      textarea.setSelectionRange(0, textarea.value.length);
-      
-      const successful = document.execCommand('copy');
-      document.body.removeChild(textarea);
-      
-      if (successful) {
-        showCopySuccess(btnId);
-      } else {
-        // 最終手段: テキストを選択状態にする
-        selectText(outputArea);
-        alert('自動コピーできませんでした。\nテキストを選択した状態にしましたので、\nCtrl+C (Mac: ⌘+C) でコピーしてください。');
-      }
-    } catch (err) {
-      selectText(outputArea);
-      alert('自動コピーできませんでした。\nテキストを選択した状態にしましたので、\nCtrl+C (Mac: ⌘+C) でコピーしてください。');
-    }
-  };
-
-  // テキストを選択状態にする
-  const selectText = (element) => {
-    const range = document.createRange();
-    range.selectNodeContents(element);
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-  };
-
-  // コピー成功時の表示
-  const showCopySuccess = (btnId) => {
-    const btn = document.getElementById(btnId);
-    const originalText = btn.textContent;
-    const originalBg = btn.style.background;
-    
-    btn.textContent = 'コピーしました!';
-    if (btnId === 'copyBtn') {
-      btn.classList.add('copied');
-    } else {
-      btn.style.background = 'linear-gradient(135deg, #66bb6a 0%, #43a047 100%)';
-    }
-    
-    setTimeout(() => {
-      btn.textContent = originalText;
-      if (btnId === 'copyBtn') {
-        btn.classList.remove('copied');
-      } else {
-        btn.style.background = originalBg || 'linear-gradient(135deg, #26a69a 0%, #00796b 100%)';
-      }
-    }, 2000);
-  };
-
   // 動的フィールド生成
   const genreSelect = document.getElementById('genre');
   genreSelect.addEventListener('change', function() {
@@ -992,7 +896,7 @@
       photoTextarea.readOnly = true;
       photoTextarea.value = data.photoInstructions;
       photoTextarea.style.backgroundColor = '#f9f9f9';
-      setTimeout(() => autoResizeTextarea(photoTextarea), 0);
+      setTimeout(() => autoResizeTextarea(photoTextarea), 100);
       
       photoGroup.appendChild(photoTextarea);
       dynamicFields.appendChild(photoGroup);
@@ -1035,7 +939,11 @@
     if (data) {
       data.fields.forEach(field => {
         const value = getFieldValue(field);
-        if (value) template += `${field.label}\n${value}\n`;
+        if (value) {
+          // templateLabelがあればそれを使用、なければfield.labelを使用
+          const displayLabel = field.templateLabel || field.label;
+          template += `${displayLabel}\n${value}\n`;
+        }
       });
     }
 
@@ -1044,6 +952,111 @@
     outputArea.style.minHeight = Math.max(40, outputArea.scrollHeight) + 'px';
     forceNotifyHeight();
   };
+
+  // ========== コピー機能（互換性強化版） ==========
+
+  // メインのコピー関数（買取テンプレート用）
+  const copyToClipboard = () => {
+    const text = document.getElementById('outputArea').textContent;
+    if (!text) return alert('テンプレートが生成されていません。');
+
+    // 新しい方法を優先的に試す
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => showCopySuccess('copyBtn'))
+        .catch(() => fallbackCopy(text, 'copyBtn')); // 失敗時は古い方法
+    } else {
+      // 新しい方法が使えない環境では最初から古い方法
+      fallbackCopy(text, 'copyBtn');
+    }
+  };
+
+  // 受電対応テンプレート用
+  const copyTelephoneToClipboard = () => {
+    const text = document.getElementById('telOutputArea').textContent;
+    if (!text) return alert('テンプレートが生成されていません。');
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => showCopySuccess('telCopyBtn'))
+        .catch(() => fallbackCopy(text, 'telCopyBtn'));
+    } else {
+      fallbackCopy(text, 'telCopyBtn');
+    }
+  };
+
+  // フォールバック方式（古い方法・全ブラウザ対応）
+  const fallbackCopy = (text, btnId = 'copyBtn') => {
+    // 一時的な非表示テキストエリアを作成
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.left = '0';
+    textarea.style.width = '2em';
+    textarea.style.height = '2em';
+    textarea.style.padding = '0';
+    textarea.style.border = 'none';
+    textarea.style.outline = 'none';
+    textarea.style.boxShadow = 'none';
+    textarea.style.background = 'transparent';
+    textarea.style.opacity = '0';
+    textarea.setAttribute('readonly', '');
+    
+    document.body.appendChild(textarea);
+    
+    // iOS対応の選択処理
+    if (navigator.userAgent.match(/ipad|iphone/i)) {
+      const range = document.createRange();
+      range.selectNodeContents(textarea);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      textarea.setSelectionRange(0, text.length);
+    } else {
+      textarea.select();
+    }
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        showCopySuccess(btnId);
+      } else {
+        alert('コピーに失敗しました。テキストを手動で選択してコピーしてください。');
+      }
+    } catch (err) {
+      console.error('コピーエラー:', err);
+      alert('コピーに失敗しました。');
+    }
+    
+    document.body.removeChild(textarea);
+  };
+
+  // コピー成功時の視覚フィードバック
+  const showCopySuccess = (btnId) => {
+    const btn = document.getElementById(btnId);
+    const originalText = btn.textContent;
+    
+    btn.textContent = 'コピーしました!';
+    
+    if (btnId === 'copyBtn') {
+      btn.classList.add('copied');
+    } else if (btnId === 'telCopyBtn') {
+      btn.style.background = 'linear-gradient(135deg, #66bb6a 0%, #43a047 100%)';
+    }
+    
+    setTimeout(() => {
+      btn.textContent = originalText;
+      
+      if (btnId === 'copyBtn') {
+        btn.classList.remove('copied');
+      } else if (btnId === 'telCopyBtn') {
+        btn.style.background = 'linear-gradient(135deg, #4db6ac 0%, #26a69a 100%)';
+      }
+    }, 2000);
+  };
+
+  // ========== ここまでコピー機能 ==========
 
   const clearTemplate = () => {
     const outputArea = document.getElementById('outputArea');
@@ -1068,12 +1081,15 @@
       { label: '【電話番号】', id: 'telPhoneNumber' },
       { label: '【商品】', id: 'telProduct' },
       { label: '【内容】', id: 'telContent' },
-      { label: '【住所】（※出張の場合）', id: 'telAddress' }
+      { label: '【住所】（※出張の場合）', id: 'telAddress', templateLabel: '【住所】' }
     ];
 
     fields.forEach(field => {
       const value = document.getElementById(field.id)?.value.trim();
-      if (value) template += `${field.label}\n${value}\n`;
+      if (value) {
+        const displayLabel = field.templateLabel || field.label;
+        template += `${displayLabel}\n${value}\n`;
+      }
     });
 
     // お客様情報
@@ -1089,9 +1105,9 @@
     const parkingSelect = document.getElementById('telParkingSelect')?.value;
     const parkingText = document.getElementById('telParkingText')?.value.trim();
     if (parkingSelect && parkingSelect !== '選択してください') {
-      template += `【駐車場】（※出張の場合）\n${parkingText ? `${parkingSelect}（${parkingText}）` : parkingSelect}\n`;
+      template += `【駐車場】\n${parkingText ? `${parkingSelect}（${parkingText}）` : parkingSelect}\n`;
     } else if (parkingText) {
-      template += `【駐車場】（※出張の場合）\n${parkingText}\n`;
+      template += `【駐車場】\n${parkingText}\n`;
     }
 
     const telOutputArea = document.getElementById('telOutputArea');
