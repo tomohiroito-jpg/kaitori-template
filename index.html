@@ -313,7 +313,7 @@
     <p class="subtitle">ジャンルを選択すると、必要な項目が自動的に表示されます</p>
 
     <div class="button-area">
-      <button id="telephoneBtn" class="nav-button">受電対応テンプレート</button>
+      <button id="telephoneBtn" class="nav-button">☎受電対応テンプレート</button>
     </div>
 
     <div class="form-group">
@@ -468,7 +468,7 @@
       <h2>📖 このツールについて</h2>
       <p>買取業務で使用するテンプレートを効率的に作成できるツールです。</p>
 
-      <h2>🚀 基本的な使い方</h2>
+      <h2>🔧 基本的な使い方</h2>
       <ol>
         <li><strong>【担当店舗・催事】と【ジャンル】を入力</strong>（必須）</li>
         <li><strong>ジャンル別項目を入力</strong>（中分類、ブランド名など）</li>
@@ -485,15 +485,25 @@
         <li><strong>メモ欄</strong>: 一時的なメモや保存に使用可能</li>
       </ul>
 
-      <h2>⚠️ 注意事項</h2>
+      <h2>🔎 補足事項</h2>
       <ul>
         <li>プルダウンで「選択してください」のままの項目は反映されません</li>
         <li>空欄の項目も反映されません</li>
         <li>未選択のプルダウンは薄いピンク色で表示されます</li>
       </ul>
+      
+      <h2>⚠️ 注意事項</h2>
+      <ul>
+        <li>「見立て金額」は任意です。自身の相場観の勉強にお役立てください。</li>
+        <li>コピーボタンが反応しない場合は、生成されたテンプレートを直接コピーしてください。</li>
+      </ul>
 
       <h2>📸 写真撮影のポイント</h2>
-      <p>ジャンルごとに撮影指示が表示されます。シリアル番号や刻印はアップで撮影し、ダメージ箇所は必ず撮影してください。</p>
+      <p>ジャンルごとに撮影指示が表示されます。</p>
+      <p>シリアル番号や刻印はアップで撮影し、ダメージ箇所は必ず撮影してください。</p>
+      
+      <h2></h2>
+        <p><strong>不具合やご不明な点、改善要望は研修課までお気軽にお問い合わせください。</strong></p>
     </div>
   </div>
 
@@ -521,7 +531,7 @@
       fields: [
         { label: "【中分類】", id: "subcategory", type: "select", options: ["トート", "ショルダー", "クラッチ", "ハンド", "リュック", "ボストン", "ポーチ", "ビジネス", "その他"] },
         { label: "【ブランド名】", id: "brandName", type: "text", placeholder: "例: ヴィトン、エルメス、シャネル" },
-        { label: "【型番／モデル名】", id: "modelName", type: "text", placeholder: "例: ネヴァーフルMM" },
+        { label: "【型番／モデル名】", id: "modelName", type: "text", placeholder: "例: M40156　ネヴァーフルMM" },
         { label: "【シリアル】", id: "serial", type: "text", placeholder: "例: CA1234" },
         { label: "【サイズ】", id: "size", type: "text", placeholder: "例: W30cm×H25cm×D12cm" },
         conditionField(true),
@@ -536,7 +546,7 @@
       fields: [
         { label: "【中分類】", id: "subcategory", type: "select", options: ["長財布", "二つ折り", "三つ折り", "コインケース", "カードケース", "キーケース", "その他"] },
         { label: "【ブランド名】", id: "brandName", type: "text", placeholder: "例: ヴィトン、グッチ、プラダ" },
-        { label: "【型番／モデル名】", id: "modelName", type: "text", placeholder: "例: ジッピーウォレット" },
+        { label: "【型番／モデル名】", id: "modelName", type: "text", placeholder: "例: M42616　ジッピーウォレット" },
         { label: "【シリアル】", id: "serial", type: "text", placeholder: "例: MI1234" },
         { label: "【サイズ】", id: "size", type: "text", placeholder: "例: W19cm×H10cm×D2cm" },
         conditionField(true),
@@ -565,7 +575,7 @@
     "貴金属・アクセサリー": {
       fields: [
         { label: "【中分類】", id: "subcategory", type: "select", options: ["ネックレス", "リング", "ブレスレット", "ピアス/イヤリング", "ブローチ", "その他"] },
-        { label: "【ブランド名】", id: "brandName", type: "text", placeholder: "例: ティファニー、カルティエ、ブルガリ" },
+        { label: "【ブランド名】", id: "brandName", type: "text", placeholder: "例: ティファニー、カルティエ、読めないが刻印あり　など" },
         { label: "【商品名】", id: "productName", type: "text", placeholder: "例: ラブブレス" },
         { label: "【素材】", id: "material", type: "text", placeholder: "例: Pt950、K18YG" },
         { label: "【重量】", id: "weight", type: "text", placeholder: "例: 10.5g" },
